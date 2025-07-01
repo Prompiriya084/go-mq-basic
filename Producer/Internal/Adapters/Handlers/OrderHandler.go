@@ -3,16 +3,17 @@ package adapters_handlers
 import (
 	models "github.com/Prompiriya084/go-mq/Models"
 	services "github.com/Prompiriya084/go-mq/Producer/Internal/Core/Services"
-	utilities "github.com/Prompiriya084/go-mq/Producer/Internal/Core/Utilities"
+	utilities_validator "github.com/Prompiriya084/go-mq/Producer/Internal/Core/Utilities/Validator"
+
 	"github.com/gofiber/fiber/v3"
 )
 
 type OrderHandler struct {
 	service   services.OrderService
-	validator utilities.Validator
+	validator utilities_validator.Validator
 }
 
-func NewOrderHandler(service services.OrderService, validator utilities.Validator) *OrderHandler {
+func NewOrderHandler(service services.OrderService, validator utilities_validator.Validator) *OrderHandler {
 	return &OrderHandler{
 		service:   service,
 		validator: validator,

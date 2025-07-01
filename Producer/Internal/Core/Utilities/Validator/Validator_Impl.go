@@ -1,7 +1,6 @@
-package adapters_utilities
+package utilities_validator
 
 import (
-	ports_utilities "github.com/Prompiriya084/go-mq/Producer/Internal/Core/Utilities"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -9,7 +8,7 @@ type validatorImpl struct {
 	validate *validator.Validate
 }
 
-func NewValidator() ports_utilities.Validator {
+func NewValidator() Validator {
 	return &validatorImpl{
 		validate: validator.New(),
 	}

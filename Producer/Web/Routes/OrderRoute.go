@@ -1,23 +1,19 @@
 package routes
 
 import (
-	"os"
-
+	ports_repositories "github.com/Prompiriya084/go-mq/Customer/Core/Ports/Repositories"
 	adapters_handlers "github.com/Prompiriya084/go-mq/Producer/Internal/Adapters/Handlers"
-	adapters_producers "github.com/Prompiriya084/go-mq/Producer/Internal/Adapters/MQ"
-	adapters_repositories "github.com/Prompiriya084/go-mq/Producer/Internal/Adapters/Repositories"
-	adapters_utilities "github.com/Prompiriya084/go-mq/Producer/Internal/Adapters/Utilities"
+
+	ports_mq "github.com/Prompiriya084/go-mq/Producer/Internal/Core/Ports/MQ"
 	services "github.com/Prompiriya084/go-mq/Producer/Internal/Core/Services"
+	utilities_validator "github.com/Prompiriya084/go-mq/Producer/Internal/Core/Utilities/Validator"
 	"github.com/gofiber/fiber/v3"
-	"gorm.io/gorm"
 )
 
-func OrderSetupRouter(db *gorm.DB, app *fiber.App) {
+func OrderSetupRouter(app *fiber.App, repo ports_repositories.OrderRepository, mqProducer ports_mq.MQProducer) {
 
-	mqProducer := adapters_producers.NewMQProducer(os.Getenv("RABBITMQ_URL"))
-	repo := adapters_repositories.NewOrderRepository(db)
 	service := services.NewOrderService(repo, mqProducer)
-	validator := adapters_utilities.NewValidator()
+	validator := utilities_validator.NewValidator()
 	handler := adapters_handlers.NewOrderHandler(service, validator)
 
 	orderApp := app.Group("/api/orders")
