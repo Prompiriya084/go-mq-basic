@@ -7,8 +7,8 @@ import (
 	database "github.com/Prompiriya084/go-mq/Infrastructure/Database"
 	adapters_producers "github.com/Prompiriya084/go-mq/Producer/Internal/Adapters/MQ"
 	routes "github.com/Prompiriya084/go-mq/Producer/Web/Routes"
-	"github.com/gofiber/fiber/v3"
-	"github.com/gofiber/fiber/v3/middleware/adaptor"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/adaptor"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 

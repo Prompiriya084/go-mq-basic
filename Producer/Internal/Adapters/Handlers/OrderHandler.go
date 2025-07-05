@@ -5,7 +5,7 @@ import (
 	services "github.com/Prompiriya084/go-mq/Producer/Internal/Core/Services"
 	utilities_validator "github.com/Prompiriya084/go-mq/Producer/Internal/Core/Utilities/Validator"
 
-	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v2"
 )
 
 type OrderHandler struct {
@@ -20,7 +20,7 @@ func NewOrderHandler(service services.OrderService, validator utilities_validato
 	}
 }
 
-func (h *OrderHandler) GetAll(c fiber.Ctx) error {
+func (h *OrderHandler) GetAll(c *fiber.Ctx) error {
 	orders, err := h.service.GetAll(nil, nil)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
@@ -34,9 +34,9 @@ func (h *OrderHandler) GetAll(c fiber.Ctx) error {
 	})
 }
 
-func (h *OrderHandler) Create(c fiber.Ctx) error {
+func (h *OrderHandler) Create(c *fiber.Ctx) error {
 	var order models.Order
-	if err := c.Bind().Body(&order); err != nil {
+	if err := c.BodyParser(&order); err != nil {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 

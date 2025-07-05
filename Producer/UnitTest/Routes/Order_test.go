@@ -13,7 +13,7 @@ import (
 	routes "github.com/Prompiriya084/go-mq/Producer/Web/Routes"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
 

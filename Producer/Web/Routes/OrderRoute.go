@@ -7,7 +7,7 @@ import (
 	ports_mq "github.com/Prompiriya084/go-mq/Producer/Internal/Core/Ports/MQ"
 	services "github.com/Prompiriya084/go-mq/Producer/Internal/Core/Services"
 	utilities_validator "github.com/Prompiriya084/go-mq/Producer/Internal/Core/Utilities/Validator"
-	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v2"
 )
 
 func OrderSetupRouter(app *fiber.App, repo ports_repositories.OrderRepository, mqProducer ports_mq.MQProducer) {
