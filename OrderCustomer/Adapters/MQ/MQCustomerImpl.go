@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	ports_customers "github.com/Prompiriya084/go-mq/Customer/Core/Ports/MQ"
+	ports_customers "github.com/Prompiriya084/go-mq/OrderCustomer/Core/Ports/MQ"
 	"github.com/rabbitmq/amqp091-go"
 )
 

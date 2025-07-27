@@ -1,8 +1,8 @@
 package services
 
 import (
-	ports_repositories "github.com/Prompiriya084/go-mq/Customer/Core/Ports/Repositories"
 	models "github.com/Prompiriya084/go-mq/Models"
+	ports_repositories "github.com/Prompiriya084/go-mq/OrderCustomer/Core/Ports/Repositories"
 )
 
 type orderServiceImpl struct {
@@ -17,6 +17,20 @@ func NewOrderService(repo ports_repositories.OrderRepository) OrderService {
 func (s *orderServiceImpl) Create(order *models.Order) error {
 
 	if err := s.repo.Add(order); err != nil {
+		return err
+	}
+	return nil
+}
+func (s *orderServiceImpl) Update(order *models.Order) error {
+
+	if err := s.repo.Update(order); err != nil {
+		return err
+	}
+	return nil
+}
+func (s *orderServiceImpl) Delete(order *models.Order) error {
+
+	if err := s.repo.Delete(order); err != nil {
 		return err
 	}
 	return nil

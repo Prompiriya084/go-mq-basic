@@ -3,12 +3,12 @@ package main
 import (
 	"os"
 
-	adapters_handlers "github.com/Prompiriya084/go-mq/Customer/Adapters/Handlers"
-	adapters_customers "github.com/Prompiriya084/go-mq/Customer/Adapters/MQ"
-	adapters_repositories "github.com/Prompiriya084/go-mq/Customer/Adapters/Repositories"
-	services "github.com/Prompiriya084/go-mq/Customer/Core/Services"
 	database "github.com/Prompiriya084/go-mq/Infrastructure/Database"
 	models "github.com/Prompiriya084/go-mq/Models"
+	adapters_handlers "github.com/Prompiriya084/go-mq/OrderCustomer/Adapters/Handlers"
+	adapters_customers "github.com/Prompiriya084/go-mq/OrderCustomer/Adapters/MQ"
+	adapters_repositories "github.com/Prompiriya084/go-mq/OrderCustomer/Adapters/Repositories"
+	services "github.com/Prompiriya084/go-mq/OrderCustomer/Core/Services"
 )
 
 func main() {
@@ -20,4 +20,6 @@ func main() {
 
 	orderHandler := adapters_handlers.NewOrderHandler(orderService, mqOrderCustomer)
 	orderHandler.Create()
+	orderHandler.Update()
+	orderHandler.Delete()
 }

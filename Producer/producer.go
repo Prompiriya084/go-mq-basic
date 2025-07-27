@@ -3,9 +3,10 @@ package main
 import (
 	"os"
 
-	adapters_repositories "github.com/Prompiriya084/go-mq/Customer/Adapters/Repositories"
 	database "github.com/Prompiriya084/go-mq/Infrastructure/Database"
 	adapters_producers "github.com/Prompiriya084/go-mq/Producer/Internal/Adapters/MQ"
+	adapters_repositories "github.com/Prompiriya084/go-mq/Producer/Internal/Adapters/Repositories"
+	services "github.com/Prompiriya084/go-mq/Producer/Internal/Core/Services"
 	routes "github.com/Prompiriya084/go-mq/Producer/Web/Routes"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/adaptor"
@@ -26,7 +27,9 @@ func main() {
 		httpSwagger.URL("http://localhost:8080/swagger/doc.json"),
 	)))
 	mqProducer := adapters_producers.NewMQProducer(os.Getenv("RABBITMQ_URL"))
-	repo := adapters_repositories.NewOrderRepository(db)
-	routes.OrderSetupRouter(app, repo, mqProducer)
+	orderRepo := adapters_repositories.NewOrderRepository(db)
+	orderService := services.NewOrderService(orderRepo, mqProducer)
+
+	routes.OrderSetupRouter(app, orderService)
 	app.Listen(":8080")
 }
