@@ -73,7 +73,7 @@ func TestGet(t *testing.T) {
 			description:       "[OK]Can return order.",
 			mockReturnedData:  &models.Order{ID: returnedOrderId, ProductID: "Product-1"},
 			mockReturnedError: nil,
-			expection:         &models.Order{ID: returnedOrderId, ProductID: "Product-1"}, //If orders found
+			expection:         &models.Order{ID: returnedOrderId, ProductID: "Product-1"},
 		},
 		{
 			description:       "[Error] Orders not found.",
@@ -111,7 +111,7 @@ func TestCreate(t *testing.T) {
 		Params            *models.Order
 		mockReturnedData  *models.Order
 		mockReturnedError error
-		expectionErr      bool //Orders length
+		expectionErr      bool
 	}{
 		{
 			description:       "[OK]Create order.",
@@ -132,7 +132,7 @@ func TestCreate(t *testing.T) {
 			Params:            mockOrder,
 			mockReturnedData:  nil,
 			mockReturnedError: errors.New("Something went wrong."),
-			expectionErr:      true, // If orders not found
+			expectionErr:      true, // If there's an error
 		},
 	}
 	for _, tc := range testcase {
@@ -169,7 +169,7 @@ func TestGetUpdate(t *testing.T) {
 		Params            *models.Order
 		mockReturnedData  *models.Order
 		mockReturnedError error
-		expectionErr      bool //Orders length
+		expectionErr      bool
 	}{
 		{
 			description:       "[OK]Update order.",
@@ -190,7 +190,7 @@ func TestGetUpdate(t *testing.T) {
 			Params:            mockOrder,
 			mockReturnedData:  mockOrder,
 			mockReturnedError: errors.New("Something went wrong."),
-			expectionErr:      true, // If orders not found
+			expectionErr:      true, // If there's an error
 		},
 	}
 	for _, tc := range testcase {
@@ -227,7 +227,7 @@ func TestDelete(t *testing.T) {
 		Params            *models.Order
 		mockReturnedData  *models.Order
 		mockReturnedError error
-		expectionErr      bool //Orders length
+		expectionErr      bool
 	}{
 		{
 			description:       "[OK]Delete order.",
@@ -248,7 +248,7 @@ func TestDelete(t *testing.T) {
 			Params:            mockOrder,
 			mockReturnedData:  mockOrder,
 			mockReturnedError: errors.New("Something went wrong."),
-			expectionErr:      true, // If orders not found
+			expectionErr:      true, // If there's an error
 		},
 	}
 	for _, tc := range testcase {
