@@ -1,6 +1,8 @@
 package adapters_handlers
 
 import (
+	"fmt"
+
 	models "github.com/Prompiriya084/go-mq/Models"
 	services "github.com/Prompiriya084/go-mq/Producer/Internal/Core/Services"
 	utilities_validator "github.com/Prompiriya084/go-mq/Producer/Internal/Core/Utilities/Validator"
@@ -23,6 +25,7 @@ func NewOrderHandler(service services.OrderService, validator utilities_validato
 
 func (h *OrderHandler) GetAll(c *fiber.Ctx) error {
 	orders, err := h.service.GetAll(nil, nil)
+	fmt.Println("Orders : ", orders)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
 	}

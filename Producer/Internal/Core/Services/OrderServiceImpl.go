@@ -31,6 +31,16 @@ func (s *orderServiceImpl) Get(filters *models.Order, preload []string) (*models
 	return s.repo.Get(filters, preload)
 }
 func (s *orderServiceImpl) Create(order *models.Order) error {
+	existingOrder, err := s.Get(&models.Order{
+		ID: order.ID,
+	}, nil)
+	if err != nil {
+		return err
+	}
+
+	if existingOrder != nil {
+		return errors.New("The order" + existingOrder.ID.String() + " already exists.")
+	}
 	order.ID = uuid.New()
 	order.CreatedAt = time.Now()
 	order.UpdatedAt = time.Now()
@@ -38,29 +48,29 @@ func (s *orderServiceImpl) Create(order *models.Order) error {
 	if err != nil {
 		return err
 	}
-	if err := s.mqProducer.PublishMessage("order_create", byteMessage); err != nil {
+	if err := s.mqProducer.PublishMessage("order.create", byteMessage); err != nil {
 		return err
 	}
 	return nil
 }
 func (s *orderServiceImpl) Update(order *models.Order) error {
-	selectedOrder, err := s.Get(&models.Order{
+	existingOrder, err := s.Get(&models.Order{
 		ID: order.ID,
 	}, nil)
 	if err != nil {
 		return err
 	}
-	if selectedOrder == nil {
-		return errors.New("Order not found.")
+	if existingOrder == nil {
+		return errors.New("The order " + order.ID.String() + " does not exists.")
 	}
-	selectedOrder.ProductID = order.ProductID
-	selectedOrder.UpdatedAt = time.Now()
+	existingOrder.ProductID = order.ProductID
+	existingOrder.UpdatedAt = time.Now()
 
-	byteMessage, err := json.Marshal(selectedOrder)
+	byteMessage, err := json.Marshal(existingOrder)
 	if err != nil {
 		return err
 	}
-	if err := s.mqProducer.PublishMessage("order_update", byteMessage); err != nil {
+	if err := s.mqProducer.PublishMessage("order.update", byteMessage); err != nil {
 		return err
 	}
 	return nil
@@ -73,7 +83,7 @@ func (s *orderServiceImpl) Delete(order *models.Order) error {
 		return err
 	}
 	if selectedOrder == nil {
-		return errors.New("Order not found.")
+		return errors.New("The order " + order.ID.String() + " does not exists.")
 	}
 	selectedOrder.DeleteAt = time.Now()
 
@@ -81,7 +91,7 @@ func (s *orderServiceImpl) Delete(order *models.Order) error {
 	if err != nil {
 		return err
 	}
-	if err := s.mqProducer.PublishMessage("order_delete", byteMessage); err != nil {
+	if err := s.mqProducer.PublishMessage("order.cancel", byteMessage); err != nil {
 		return err
 	}
 	return nil

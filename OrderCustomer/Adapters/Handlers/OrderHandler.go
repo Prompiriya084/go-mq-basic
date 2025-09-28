@@ -20,7 +20,7 @@ func NewOrderHandler(service services.OrderService, mq ports_mq.MQCustomer[model
 	}
 }
 func (h *OrderHandler) Create() {
-	err := h.mq.ReceiveMessage("order_create", func(order models.Order) error {
+	err := h.mq.ReceiveMessage("order.create", func(order models.Order) error {
 
 		log.Printf("✅ Processed Order: ID=%s", order.ID)
 		if err := h.service.Create(&order); err != nil {
@@ -35,7 +35,7 @@ func (h *OrderHandler) Create() {
 	}
 }
 func (h *OrderHandler) Update() {
-	err := h.mq.ReceiveMessage("order_update", func(order models.Order) error {
+	err := h.mq.ReceiveMessage("order.update", func(order models.Order) error {
 
 		log.Printf("✅ Processed Order: ID=%s", order.ID)
 		if err := h.service.Update(&order); err != nil {
@@ -49,8 +49,8 @@ func (h *OrderHandler) Update() {
 		panic(err)
 	}
 }
-func (h *OrderHandler) Delete() {
-	err := h.mq.ReceiveMessage("order_delete", func(order models.Order) error {
+func (h *OrderHandler) Cancel() {
+	err := h.mq.ReceiveMessage("order.cancel", func(order models.Order) error {
 
 		log.Printf("✅ Processed Order: ID=%s", order.ID)
 		if err := h.service.Delete(&order); err != nil {

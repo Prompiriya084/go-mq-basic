@@ -21,5 +21,5 @@ func main() {
 	orderHandler := adapters_handlers.NewOrderHandler(orderService, mqOrderCustomer)
 	orderHandler.Create()
 	orderHandler.Update()
-	orderHandler.Delete()
+	orderHandler.Cancel()
 }
