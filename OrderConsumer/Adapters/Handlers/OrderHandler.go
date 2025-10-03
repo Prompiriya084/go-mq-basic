@@ -3,24 +3,24 @@ package adapters_handlers
 import (
 	"log"
 
+	eventbus "github.com/Prompiriya084/go-mq/Eventbus"
 	models "github.com/Prompiriya084/go-mq/Models"
-	ports_mq "github.com/Prompiriya084/go-mq/OrderCustomer/Core/Ports/MQ"
-	services "github.com/Prompiriya084/go-mq/OrderCustomer/Core/Services"
+	services "github.com/Prompiriya084/go-mq/OrderConsumer/Core/Services"
 )
 
 type OrderHandler struct {
 	service services.OrderService
-	mq      ports_mq.MQCustomer[models.Order]
+	bus     eventbus.EventBus[models.Order]
 }
 
-func NewOrderHandler(service services.OrderService, mq ports_mq.MQCustomer[models.Order]) *OrderHandler {
+func NewOrderHandler(service services.OrderService, bus eventbus.EventBus[models.Order]) *OrderHandler {
 	return &OrderHandler{
 		service: service,
-		mq:      mq,
+		bus:     bus,
 	}
 }
 func (h *OrderHandler) Create() {
-	err := h.mq.ReceiveMessage("order.create", func(order models.Order) error {
+	err := h.bus.Subscribe("order.create", func(order models.Order) error {
 
 		log.Printf("✅ Processed Order: ID=%s", order.ID)
 		if err := h.service.Create(&order); err != nil {
@@ -35,7 +35,7 @@ func (h *OrderHandler) Create() {
 	}
 }
 func (h *OrderHandler) Update() {
-	err := h.mq.ReceiveMessage("order.update", func(order models.Order) error {
+	err := h.bus.Subscribe("order.update", func(order models.Order) error {
 
 		log.Printf("✅ Processed Order: ID=%s", order.ID)
 		if err := h.service.Update(&order); err != nil {
@@ -50,7 +50,7 @@ func (h *OrderHandler) Update() {
 	}
 }
 func (h *OrderHandler) Cancel() {
-	err := h.mq.ReceiveMessage("order.cancel", func(order models.Order) error {
+	err := h.bus.Subscribe("order.cancel", func(order models.Order) error {
 
 		log.Printf("✅ Processed Order: ID=%s", order.ID)
 		if err := h.service.Delete(&order); err != nil {

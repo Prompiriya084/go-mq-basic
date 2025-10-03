@@ -1,27 +1,55 @@
-package adapters_customers
+package eventbus
 
 import (
 	"encoding/json"
 	"log"
+	"sync"
 	"time"
 
-	ports_customers "github.com/Prompiriya084/go-mq/OrderCustomer/Core/Ports/MQ"
 	"github.com/rabbitmq/amqp091-go"
 )
 
-type mqCustomerImpl[Tentity any] struct {
+type mqEventBusImpl[Tentity any] struct {
 	connStr string
 	conn    *amqp091.Connection
 	channel *amqp091.Channel
+	mu      sync.Mutex
 }
 
-func NewMQCustomer[Tentity any](connStr string) ports_customers.MQCustomer[Tentity] {
-	return &mqCustomerImpl[Tentity]{
+func NewMQEventbus[Tentity any](connStr string) EventBus[Tentity] {
+	return &mqEventBusImpl[Tentity]{
 		connStr: connStr,
 	}
 }
 
-func (c *mqCustomerImpl[Tentity]) connect(queue string) (<-chan amqp091.Delivery, error) {
+// connect for publisher
+func (c *mqEventBusImpl[Tentity]) connectPublisher() error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	// close old
+	if c.channel != nil {
+		_ = c.channel.Close()
+	}
+	if c.conn != nil {
+		_ = c.conn.Close()
+	}
+
+	conn, err := amqp091.Dial(c.connStr)
+	if err != nil {
+		return err
+	}
+	ch, err := conn.Channel()
+	if err != nil {
+		_ = conn.Close()
+		return err
+	}
+	c.conn = conn
+	c.channel = ch
+	return nil
+}
+
+func (c *mqEventBusImpl[Tentity]) connectConsumer(queue string) (<-chan amqp091.Delivery, error) {
 	var err error
 	// Close previous connection/channel if they exist
 	if c.channel != nil {
@@ -57,10 +85,41 @@ func (c *mqCustomerImpl[Tentity]) connect(queue string) (<-chan amqp091.Delivery
 
 	return msgs, nil
 }
+func (p *mqEventBusImpl[Tentity]) Publish(queue string, body []byte) error {
+	if err := p.connectPublisher(); err != nil {
+		log.Printf("connect failed: %v", err)
+	}
 
-func (c *mqCustomerImpl[Tentity]) ReceiveMessage(queue string, handler func(data Tentity) error) error {
+	_, err := p.channel.QueueDeclare(
+		queue,
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
+	if err != nil {
+		return err
+	}
+	err = p.channel.Publish("", queue, false, false, amqp091.Publishing{
+		ContentType:  "application/json",
+		Body:         body,
+		DeliveryMode: amqp091.Persistent, // message survives restart
+	})
+
+	if err != nil {
+		// Force reconnect and retry once
+		log.Printf("❌ Publish failed, retrying: %v", err)
+		_ = p.connectPublisher() // close and reconnect
+		return p.Publish(queue, body)
+	}
+
+	return nil
+}
+
+func (c *mqEventBusImpl[Tentity]) Subscribe(queue string, handler func(data Tentity) error) error {
 	for {
-		msgs, err := c.connect(queue)
+		msgs, err := c.connectConsumer(queue)
 		if err != nil {
 			log.Printf("Failed to connect to RabbitMQ: %v. Retrying in 5s...", err)
 			time.Sleep(5 * time.Second)

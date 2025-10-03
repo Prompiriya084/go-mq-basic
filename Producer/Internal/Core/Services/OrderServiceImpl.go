@@ -5,21 +5,22 @@ import (
 	"errors"
 	"time"
 
+	eventbus "github.com/Prompiriya084/go-mq/EventBus"
 	models "github.com/Prompiriya084/go-mq/Models"
-	ports_mq "github.com/Prompiriya084/go-mq/Producer/Internal/Core/Ports/MQ"
+
 	ports_repositories "github.com/Prompiriya084/go-mq/Producer/Internal/Core/Ports/Repositories"
 	"github.com/google/uuid"
 )
 
 type orderServiceImpl struct {
-	repo       ports_repositories.OrderRepository
-	mqProducer ports_mq.MQProducer
+	repo ports_repositories.OrderRepository
+	bus  eventbus.Eventbus
 }
 
-func NewOrderService(repo ports_repositories.OrderRepository, mqProducer ports_mq.MQProducer) OrderService {
+func NewOrderService(repo ports_repositories.OrderRepository, bus eventbus.Eventbus) OrderService {
 	return &orderServiceImpl{
-		repo:       repo,
-		mqProducer: mqProducer,
+		repo: repo,
+		bus:  bus,
 	}
 }
 
@@ -48,7 +49,7 @@ func (s *orderServiceImpl) Create(order *models.Order) error {
 	if err != nil {
 		return err
 	}
-	if err := s.mqProducer.PublishMessage("order.create", byteMessage); err != nil {
+	if err := s.bus.PublishMessage("order.create", byteMessage); err != nil {
 		return err
 	}
 	return nil
@@ -70,7 +71,7 @@ func (s *orderServiceImpl) Update(order *models.Order) error {
 	if err != nil {
 		return err
 	}
-	if err := s.mqProducer.PublishMessage("order.update", byteMessage); err != nil {
+	if err := s.bus.PublishMessage("order.update", byteMessage); err != nil {
 		return err
 	}
 	return nil
@@ -91,7 +92,7 @@ func (s *orderServiceImpl) Delete(order *models.Order) error {
 	if err != nil {
 		return err
 	}
-	if err := s.mqProducer.PublishMessage("order.cancel", byteMessage); err != nil {
+	if err := s.bus.PublishMessage("order.cancel", byteMessage); err != nil {
 		return err
 	}
 	return nil
