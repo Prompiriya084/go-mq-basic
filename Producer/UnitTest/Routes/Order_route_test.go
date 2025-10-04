@@ -10,11 +10,11 @@ import (
 	"testing"
 	"time"
 
+	eventbus "github.com/Prompiriya084/go-mq/EventBus"
 	models "github.com/Prompiriya084/go-mq/Models"
-	ports_mq "github.com/Prompiriya084/go-mq/Producer/Internal/Core/Ports/MQ"
 	ports_repositories "github.com/Prompiriya084/go-mq/Producer/Internal/Core/Ports/Repositories"
 	services "github.com/Prompiriya084/go-mq/Producer/Internal/Core/Services"
-	unittest_mq "github.com/Prompiriya084/go-mq/Producer/UnitTest/MockItem/MQ"
+	unittest_eventbus "github.com/Prompiriya084/go-mq/Producer/UnitTest/MockItem/MQ"
 	unittest_repositories "github.com/Prompiriya084/go-mq/Producer/UnitTest/MockItem/Repositories"
 	routes "github.com/Prompiriya084/go-mq/Producer/Web/Routes"
 	"github.com/stretchr/testify/assert"
@@ -24,9 +24,9 @@ import (
 )
 
 // This ensures a clean slate and avoids state leakage between tests.
-func createTestApp(mockRepo ports_repositories.OrderRepository, mockMqProducer ports_mq.MQProducer) *fiber.App {
+func createTestApp(mockRepo ports_repositories.OrderRepository, mockEventbus eventbus.EventBus[models.Order]) *fiber.App {
 	app := fiber.New()
-	service := services.NewOrderService(mockRepo, mockMqProducer)
+	service := services.NewOrderService(mockRepo, mockEventbus)
 	routes.OrderSetupRouter(app, service) // Set up the routes for testing
 	return app
 }
@@ -37,8 +37,8 @@ func TestCreate(t *testing.T) {
 	mockRepo := &unittest_repositories.MockOrderRepo{
 		MockRepositoryImpl: &unittest_repositories.MockRepositoryImpl[models.Order]{},
 	}
-	mockProducer := &unittest_mq.MockProducer{}
-	app := createTestApp(mockRepo, mockProducer)
+	mockEventbus := &unittest_eventbus.MockEventbus[models.Order]{}
+	app := createTestApp(mockRepo, mockEventbus)
 	// app.Post("/orders",  ) // Replace with your actual handler
 	testcase := []struct {
 		description string
@@ -120,7 +120,7 @@ func TestGetAll(t *testing.T) {
 					},
 				},
 			}
-			mockMqProducer := &unittest_mq.MockProducer{}
+			mockMqProducer := &unittest_eventbus.MockEventbus[models.Order]{}
 			app := createTestApp(mockRepo, mockMqProducer)
 
 			req := httptest.NewRequest(http.MethodGet, "/api/orders", nil)
@@ -185,7 +185,7 @@ func TestGet(t *testing.T) {
 					},
 				},
 			}
-			mockMqProducer := &unittest_mq.MockProducer{}
+			mockMqProducer := &unittest_eventbus.MockEventbus[models.Order]{}
 			app := createTestApp(mockRepo, mockMqProducer)
 			req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/api/orders/%s", tc.queryString), nil)
 			req.Header.Set("Content-type", "application/json")
@@ -302,7 +302,7 @@ func TestUpdate(t *testing.T) {
 					},
 				},
 			}
-			mockMqProducer := &unittest_mq.MockProducer{}
+			mockMqProducer := &unittest_eventbus.MockEventbus[models.Order]{}
 			app := createTestApp(mockRepo, mockMqProducer)
 
 			req := httptest.NewRequest(http.MethodPut, fmt.Sprintf("/api/orders/%s", tc.queryString), bytes.NewReader(reqbody))
@@ -384,7 +384,7 @@ func TestDelete(t *testing.T) {
 					},
 				},
 			}
-			mockMqProducer := &unittest_mq.MockProducer{}
+			mockMqProducer := &unittest_eventbus.MockEventbus[models.Order]{}
 			app := createTestApp(mockRepo, mockMqProducer)
 			req := httptest.NewRequest(http.MethodDelete, fmt.Sprintf("/api/orders/%s", tc.queryString), nil)
 			req.Header.Set("Content-type", "application/json")

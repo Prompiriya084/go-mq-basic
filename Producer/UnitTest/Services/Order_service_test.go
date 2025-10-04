@@ -7,7 +7,7 @@ import (
 
 	models "github.com/Prompiriya084/go-mq/Models"
 	services "github.com/Prompiriya084/go-mq/Producer/Internal/Core/Services"
-	unittest_mq "github.com/Prompiriya084/go-mq/Producer/UnitTest/MockItem/MQ"
+	unittest_eventbus "github.com/Prompiriya084/go-mq/Producer/UnitTest/MockItem/MQ"
 	unittest_repositories "github.com/Prompiriya084/go-mq/Producer/UnitTest/MockItem/Repositories"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -51,8 +51,8 @@ func TestGetAll(t *testing.T) {
 					},
 				},
 			}
-			mockMqProducer := &unittest_mq.MockProducer{}
-			services := services.NewOrderService(mockRepo, mockMqProducer)
+			mockEventbus := &unittest_eventbus.MockEventbus[models.Order]{}
+			services := services.NewOrderService(mockRepo, mockEventbus)
 			response, err := services.GetAll(tc.sendingFilter, nil)
 
 			assert.NoError(t, err)
@@ -91,8 +91,8 @@ func TestGet(t *testing.T) {
 					},
 				},
 			}
-			mockMqProducer := &unittest_mq.MockProducer{}
-			services := services.NewOrderService(mockRepo, mockMqProducer)
+			mockEventbus := &unittest_eventbus.MockEventbus[models.Order]{}
+			services := services.NewOrderService(mockRepo, mockEventbus)
 			response, err := services.Get(nil, nil)
 			fmt.Println("Response: ", response)
 			fmt.Println("Expection: ", tc.expection)
@@ -144,8 +144,8 @@ func TestCreate(t *testing.T) {
 					},
 				},
 			}
-			mockMqProducer := &unittest_mq.MockProducer{}
-			services := services.NewOrderService(mockRepo, mockMqProducer)
+			mockEventbus := &unittest_eventbus.MockEventbus[models.Order]{}
+			services := services.NewOrderService(mockRepo, mockEventbus)
 
 			response := services.Create(tc.Params)
 
@@ -202,8 +202,8 @@ func TestGetUpdate(t *testing.T) {
 					},
 				},
 			}
-			mockMqProducer := &unittest_mq.MockProducer{}
-			services := services.NewOrderService(mockRepo, mockMqProducer)
+			mockEventbus := &unittest_eventbus.MockEventbus[models.Order]{}
+			services := services.NewOrderService(mockRepo, mockEventbus)
 
 			response := services.Update(tc.Params)
 
@@ -260,8 +260,8 @@ func TestDelete(t *testing.T) {
 					},
 				},
 			}
-			mockMqProducer := &unittest_mq.MockProducer{}
-			services := services.NewOrderService(mockRepo, mockMqProducer)
+			mockEventbus := &unittest_eventbus.MockEventbus[models.Order]{}
+			services := services.NewOrderService(mockRepo, mockEventbus)
 
 			response := services.Delete(tc.Params)
 

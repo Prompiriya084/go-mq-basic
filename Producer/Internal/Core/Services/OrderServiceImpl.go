@@ -14,10 +14,10 @@ import (
 
 type orderServiceImpl struct {
 	repo ports_repositories.OrderRepository
-	bus  eventbus.Eventbus
+	bus  eventbus.EventBus[models.Order]
 }
 
-func NewOrderService(repo ports_repositories.OrderRepository, bus eventbus.Eventbus) OrderService {
+func NewOrderService(repo ports_repositories.OrderRepository, bus eventbus.EventBus[models.Order]) OrderService {
 	return &orderServiceImpl{
 		repo: repo,
 		bus:  bus,
@@ -49,7 +49,7 @@ func (s *orderServiceImpl) Create(order *models.Order) error {
 	if err != nil {
 		return err
 	}
-	if err := s.bus.PublishMessage("order.create", byteMessage); err != nil {
+	if err := s.bus.Publish("order.create", byteMessage); err != nil {
 		return err
 	}
 	return nil
@@ -66,12 +66,11 @@ func (s *orderServiceImpl) Update(order *models.Order) error {
 	}
 	existingOrder.ProductID = order.ProductID
 	existingOrder.UpdatedAt = time.Now()
-
 	byteMessage, err := json.Marshal(existingOrder)
 	if err != nil {
 		return err
 	}
-	if err := s.bus.PublishMessage("order.update", byteMessage); err != nil {
+	if err := s.bus.Publish("order.update", byteMessage); err != nil {
 		return err
 	}
 	return nil
@@ -92,7 +91,7 @@ func (s *orderServiceImpl) Delete(order *models.Order) error {
 	if err != nil {
 		return err
 	}
-	if err := s.bus.PublishMessage("order.cancel", byteMessage); err != nil {
+	if err := s.bus.Publish("order.cancel", byteMessage); err != nil {
 		return err
 	}
 	return nil
