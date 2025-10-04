@@ -9,8 +9,8 @@ type repositoryImpl[Tentity any] struct {
 func newRepository[Tentity any](db *gorm.DB) *repositoryImpl[Tentity] {
 	return &repositoryImpl[Tentity]{db: db}
 }
-func (r *repositoryImpl[Tentity]) GetAll(filters *Tentity, preload []string) ([]Tentity, error) {
-	var entities []Tentity
+func (r *repositoryImpl[Tentity]) GetAll(filters *Tentity, preload []string) ([]*Tentity, error) {
+	var entities []*Tentity
 	query := r.db
 	for _, p := range preload {
 		query = query.Preload(p)

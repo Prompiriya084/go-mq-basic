@@ -1,26 +1,22 @@
 package routes
 
 import (
-	"os"
-
 	adapters_handlers "github.com/Prompiriya084/go-mq/Producer/Internal/Adapters/Handlers"
-	adapters_producers "github.com/Prompiriya084/go-mq/Producer/Internal/Adapters/MQ"
-	adapters_repositories "github.com/Prompiriya084/go-mq/Producer/Internal/Adapters/Repositories"
-	adapters_utilities "github.com/Prompiriya084/go-mq/Producer/Internal/Adapters/Utilities"
+
 	services "github.com/Prompiriya084/go-mq/Producer/Internal/Core/Services"
-	"github.com/gofiber/fiber/v3"
-	"gorm.io/gorm"
+	utilities_validator "github.com/Prompiriya084/go-mq/Producer/Internal/Core/Utilities/Validator"
+	"github.com/gofiber/fiber/v2"
 )
 
-func OrderSetupRouter(db *gorm.DB, app *fiber.App) {
+func OrderSetupRouter(app *fiber.App, service services.OrderService) {
 
-	mqProducer := adapters_producers.NewMQProducer(os.Getenv("RABBITMQ_URL"))
-	repo := adapters_repositories.NewOrderRepository(db)
-	service := services.NewOrderService(repo, mqProducer)
-	validator := adapters_utilities.NewValidator()
+	validator := utilities_validator.NewValidator()
 	handler := adapters_handlers.NewOrderHandler(service, validator)
 
 	orderApp := app.Group("/api/orders")
 	orderApp.Post("", handler.Create)
 	orderApp.Get("", handler.GetAll)
+	orderApp.Get("/:id", handler.Get)
+	orderApp.Put("/:id", handler.Update)
+	orderApp.Delete("/:id", handler.Delete)
 }
