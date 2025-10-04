@@ -120,8 +120,8 @@ func TestGetAll(t *testing.T) {
 					},
 				},
 			}
-			mockMqProducer := &unittest_eventbus.MockEventbus[models.Order]{}
-			app := createTestApp(mockRepo, mockMqProducer)
+			mockEventbus := &unittest_eventbus.MockEventbus[models.Order]{}
+			app := createTestApp(mockRepo, mockEventbus)
 
 			req := httptest.NewRequest(http.MethodGet, "/api/orders", nil)
 			req.Header.Set("Content-type", "application/json")
@@ -185,8 +185,8 @@ func TestGet(t *testing.T) {
 					},
 				},
 			}
-			mockMqProducer := &unittest_eventbus.MockEventbus[models.Order]{}
-			app := createTestApp(mockRepo, mockMqProducer)
+			mockEventbus := &unittest_eventbus.MockEventbus[models.Order]{}
+			app := createTestApp(mockRepo, mockEventbus)
 			req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/api/orders/%s", tc.queryString), nil)
 			req.Header.Set("Content-type", "application/json")
 			resp, err := app.Test(req)
@@ -302,8 +302,8 @@ func TestUpdate(t *testing.T) {
 					},
 				},
 			}
-			mockMqProducer := &unittest_eventbus.MockEventbus[models.Order]{}
-			app := createTestApp(mockRepo, mockMqProducer)
+			mockEventbus := &unittest_eventbus.MockEventbus[models.Order]{}
+			app := createTestApp(mockRepo, mockEventbus)
 
 			req := httptest.NewRequest(http.MethodPut, fmt.Sprintf("/api/orders/%s", tc.queryString), bytes.NewReader(reqbody))
 			req.Header.Set("Content-type", "application/json")
@@ -384,8 +384,8 @@ func TestDelete(t *testing.T) {
 					},
 				},
 			}
-			mockMqProducer := &unittest_eventbus.MockEventbus[models.Order]{}
-			app := createTestApp(mockRepo, mockMqProducer)
+			mockEventbus := &unittest_eventbus.MockEventbus[models.Order]{}
+			app := createTestApp(mockRepo, mockEventbus)
 			req := httptest.NewRequest(http.MethodDelete, fmt.Sprintf("/api/orders/%s", tc.queryString), nil)
 			req.Header.Set("Content-type", "application/json")
 			resp, err := app.Test(req)
