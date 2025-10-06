@@ -43,13 +43,21 @@ func (s *orderServiceImpl) Create(order *models.Order) error {
 		return errors.New("The order" + existingOrder.ID.String() + " already exists.")
 	}
 	order.ID = uuid.New()
+	order.Status = "PENDING"
 	order.CreatedAt = time.Now()
 	order.UpdatedAt = time.Now()
-	byteMessage, err := json.Marshal(order)
+	if err := s.repo.Add(order); err != nil {
+		return err
+	}
+
+	byteMessage, err := json.Marshal(&models.Order{
+		ID:        order.ID,
+		ProductID: order.ProductID,
+	})
 	if err != nil {
 		return err
 	}
-	if err := s.bus.Publish("order.create", byteMessage); err != nil {
+	if err := s.bus.Publish("order.created", byteMessage); err != nil {
 		return err
 	}
 	return nil
