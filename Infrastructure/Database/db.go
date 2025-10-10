@@ -49,7 +49,7 @@ func InitDb() *gorm.DB {
 	}
 	fmt.Printf("Connect successful.")
 
-	db.AutoMigrate(models.Order{}, models.Product{})
+	db.AutoMigrate(models.Order{}, models.Inventory{})
 
 	return db
 }
