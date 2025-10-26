@@ -5,21 +5,30 @@ import (
 
 	eventbus "github.com/Prompiriya084/go-mq/Eventbus"
 	database "github.com/Prompiriya084/go-mq/Infrastructure/Database"
-	adapters_handlers "github.com/Prompiriya084/go-mq/InventoryService/Adapters/Handlers"
+	adapters_handlers "github.com/Prompiriya084/go-mq/InventoryService/Internal/Adapters/Handlers"
+	utilities_validator "github.com/Prompiriya084/go-mq/InventoryService/Internal/Utilities/Validator"
+	routes "github.com/Prompiriya084/go-mq/InventoryService/Web/Routes"
 	models "github.com/Prompiriya084/go-mq/Models"
+	"github.com/gofiber/fiber/v2"
 
-	adapters_repositories "github.com/Prompiriya084/go-mq/InventoryService/Adapters/Repositories"
-	services "github.com/Prompiriya084/go-mq/InventoryService/Core/Services"
+	adapters_repositories "github.com/Prompiriya084/go-mq/InventoryService/Internal/Adapters/Repositories"
+	services "github.com/Prompiriya084/go-mq/InventoryService/Internal/Core/Services"
 )
 
 func main() {
+	app := fiber.New()
 	db := database.InitDb()
 
 	repo := adapters_repositories.NewInventoryRepository(db)
 	mqEventbus := eventbus.NewMQEventbus[models.Order](os.Getenv("RABBITMQ_URL"))
-	orderService := services.NewInventoryService(repo, mqEventbus)
+	inventoryService := services.NewInventoryService(repo, mqEventbus)
 
-	inventoryHandler := adapters_handlers.NewInventoryHandler(orderService, mqEventbus)
-	inventoryHandler.CheckStock()
-	inventoryHandler.ReverseStock()
+	validator := utilities_validator.NewValidator()
+	inventoryHandler := adapters_handlers.NewInventoryHandler(inventoryService, mqEventbus, validator)
+
+	routes.InventorySetupRouter(app, inventoryHandler)
+
+	go inventoryHandler.CheckStock()
+	go inventoryHandler.ReverseStock()
+	app.Listen(":8081")
 }

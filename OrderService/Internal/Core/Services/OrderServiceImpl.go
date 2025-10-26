@@ -31,7 +31,7 @@ func (s *orderServiceImpl) Get(filters *models.Order, preload []string) (*models
 	return s.repo.Get(filters, preload)
 }
 func (s *orderServiceImpl) Create(order *models.Order) error {
-	existingOrder, err := s.Get(&models.Order{
+	existingOrder, err := s.repo.Get(&models.Order{
 		ID: order.ID,
 	}, nil)
 	if err != nil {

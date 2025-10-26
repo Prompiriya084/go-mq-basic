@@ -1,6 +1,10 @@
 package adapters_repositories
 
-import "gorm.io/gorm"
+import (
+	"errors"
+
+	"gorm.io/gorm"
+)
 
 type repositoryImpl[Tentity any] struct {
 	db *gorm.DB
@@ -9,8 +13,8 @@ type repositoryImpl[Tentity any] struct {
 func newRepository[Tentity any](db *gorm.DB) *repositoryImpl[Tentity] {
 	return &repositoryImpl[Tentity]{db: db}
 }
-func (r *repositoryImpl[Tentity]) GetAll(filters *Tentity, preload []string) ([]Tentity, error) {
-	var entities []Tentity
+func (r *repositoryImpl[Tentity]) GetAll(filters *Tentity, preload []string) ([]*Tentity, error) {
+	var entities []*Tentity
 	query := r.db
 	for _, p := range preload {
 		query = query.Preload(p)
@@ -38,6 +42,9 @@ func (r *repositoryImpl[Tentity]) Get(filters *Tentity, preload []string) (*Tent
 	}
 
 	if result := query.First(&entity); result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, result.Error
 	}
 	return entity, nil

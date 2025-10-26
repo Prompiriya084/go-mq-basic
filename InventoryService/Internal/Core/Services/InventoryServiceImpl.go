@@ -2,14 +2,14 @@ package services
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"time"
 
-	eventbus "github.com/Prompiriya084/go-mq/EventBus"
-	ports_repositories "github.com/Prompiriya084/go-mq/InventoryService/Core/Ports/Repositories"
+	eventbus "github.com/Prompiriya084/go-mq/Eventbus"
+	ports_repositories "github.com/Prompiriya084/go-mq/InventoryService/Internal/Core/Ports/Repositories"
 	models "github.com/Prompiriya084/go-mq/Models"
+	"github.com/google/uuid"
 )
 
 type inventoryServiceImpl struct {
@@ -39,9 +39,9 @@ func (s *inventoryServiceImpl) checkStockSuccessful(order *models.Order) error {
 	if err != nil {
 		return err
 	}
-	existingItemInStock, err := s.Get(&models.Inventory{
+	existingItemInStock, err := s.repo.Get(&models.Inventory{
 		ProductID: order.ProductID,
-	})
+	}, nil)
 	if err != nil {
 		return err
 	}
@@ -60,9 +60,9 @@ func (s *inventoryServiceImpl) checkStockSuccessful(order *models.Order) error {
 }
 
 func (s *inventoryServiceImpl) CheckStock(order *models.Order) error {
-	existingItemInStock, err := s.Get(&models.Inventory{
+	existingItemInStock, err := s.repo.Get(&models.Inventory{
 		ProductID: order.ProductID,
-	})
+	}, nil)
 	if err != nil {
 		return err
 	}
@@ -78,9 +78,9 @@ func (s *inventoryServiceImpl) CheckStock(order *models.Order) error {
 	return nil
 }
 func (s *inventoryServiceImpl) ReverseStock(order *models.Order) error {
-	existingItemInStock, err := s.Get(&models.Inventory{
+	existingItemInStock, err := s.repo.Get(&models.Inventory{
 		ProductID: order.ProductID,
-	})
+	}, nil)
 	if err != nil {
 		return err
 	}
@@ -95,59 +95,62 @@ func (s *inventoryServiceImpl) ReverseStock(order *models.Order) error {
 
 	return nil
 }
-func (s *inventoryServiceImpl) Get(invent *models.Inventory) (*models.Inventory, error) {
-	existingItemInStock, err := s.repo.Get(invent, nil)
-	if err != nil {
-		return nil, err
-	}
+func (s *inventoryServiceImpl) GetAll(filters *models.Inventory, preload []string) ([]*models.Inventory, error) {
+	return s.repo.GetAll(filters, preload)
+}
 
-	return existingItemInStock, nil
+func (s *inventoryServiceImpl) Get(filters *models.Inventory, preload []string) (*models.Inventory, error) {
+	return s.repo.Get(filters, preload)
 }
 func (s *inventoryServiceImpl) Create(invent *models.Inventory) error {
-	existingItemInStock, err := s.Get(&models.Inventory{
+	errMessage := "Failed to create new stock :"
+	existingItemInStock, err := s.repo.Get(&models.Inventory{
 		ProductID: invent.ProductID,
-	})
+	}, nil)
 
 	if err != nil {
-		return fmt.Errorf("Creating new stock failed: %w", err)
+		return fmt.Errorf("%s %w", errMessage, err)
 	}
 
 	if existingItemInStock != nil {
-		return errors.New("The Product ID : " + existingItemInStock.ProductID + " already exists.")
+		return fmt.Errorf("%s The product %s already exists", errMessage, existingItemInStock.ProductID)
 	}
+	invent.ID = uuid.New()
 
 	if err := s.repo.Add(invent); err != nil {
-		return fmt.Errorf("Failed to create the product ID : "+existingItemInStock.ProductID+" into inventory : %w", err)
+		return fmt.Errorf("%s %w", errMessage, err)
 	}
 	return nil
 }
 func (s *inventoryServiceImpl) Update(invent *models.Inventory) error {
-	existingItemInStock, err := s.Get(&models.Inventory{
+	errMessage := "Failed to update stock :"
+	existingItemInStock, err := s.repo.Get(&models.Inventory{
 		ID: invent.ID,
-	})
+	}, nil)
 	if err != nil {
-		return fmt.Errorf("failed to get order: %w", err)
+		return fmt.Errorf("%s %w", errMessage, err)
 	}
 	if existingItemInStock != nil {
-		return errors.New("The order" + invent.ID.String() + " already exists.")
+		return fmt.Errorf("%s The order %s already exists", errMessage, invent.ID.String())
 	}
 	if err := s.repo.Update(invent); err != nil {
-		return err
+		return fmt.Errorf("%s %w", errMessage, err)
 	}
 	return nil
 }
 func (s *inventoryServiceImpl) Delete(invent *models.Inventory) error {
-	existingItemInStock, err := s.Get(&models.Inventory{
+	errMessage := "Failed to delete stock :"
+	existingItemInStock, err := s.repo.Get(&models.Inventory{
 		ID: invent.ID,
-	})
+	}, nil)
 	if err != nil {
-		return fmt.Errorf("failed to get order: %w", err)
+		return fmt.Errorf("%s %w", errMessage, err)
 	}
 	if existingItemInStock == nil {
-		return errors.New("The order" + invent.ID.String() + " doesn't exist.")
+		return fmt.Errorf("%s The order %s doesn't exist", errMessage, invent.ID.String())
 	}
 	if err := s.repo.Delete(invent); err != nil {
-		return err
+		return fmt.Errorf("%s %w", errMessage, err)
 	}
 	return nil
 }

@@ -1,7 +1,7 @@
 package adapters_repositories
 
 import (
-	ports_repositories "github.com/Prompiriya084/go-mq/InventoryService/Core/Ports/Repositories"
+	ports_repositories "github.com/Prompiriya084/go-mq/InventoryService/Internal/Core/Ports/Repositories"
 	models "github.com/Prompiriya084/go-mq/Models"
 	"gorm.io/gorm"
 )
