@@ -60,6 +60,11 @@ func (s *inventoryServiceImpl) checkStockSuccessful(order *models.Order) error {
 }
 
 func (s *inventoryServiceImpl) CheckStock(order *models.Order) error {
+	fmt.Println("checstock: ", order.ProductID)
+	testmodel := &models.Inventory{
+		ProductID: order.ProductID,
+	}
+	fmt.Println("sending model: ", testmodel)
 	existingItemInStock, err := s.repo.Get(&models.Inventory{
 		ProductID: order.ProductID,
 	}, nil)

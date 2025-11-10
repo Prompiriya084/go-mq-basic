@@ -25,7 +25,7 @@ func NewInventoryHandler(service services.InventoryService, bus eventbus.EventBu
 	}
 }
 func (h *InventoryHandler) CheckStock() {
-	err := h.bus.Subscribe("inventory.check.requested", func(param models.Order) error {
+	err := h.bus.Subscribe("order.created", func(param models.Order) error {
 
 		log.Printf("✅ Processed Order: %v", param)
 		if err := h.service.CheckStock(&param); err != nil {

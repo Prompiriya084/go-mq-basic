@@ -40,8 +40,8 @@ func (r *repositoryImpl[Tentity]) Get(filters *Tentity, preload []string) (*Tent
 	if filters != nil {
 		query = query.Where(filters)
 	}
-
-	if result := query.First(&entity); result.Error != nil {
+	result := query.First(entity) // pass pointer
+	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
