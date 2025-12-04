@@ -11,11 +11,11 @@ import (
 	"time"
 
 	eventbus "github.com/Prompiriya084/go-mq/EventBus"
-	models "github.com/Prompiriya084/go-mq/Models"
 	adapters_handlers "github.com/Prompiriya084/go-mq/OrderService/Internal/Adapters/Handlers"
 	ports_repositories "github.com/Prompiriya084/go-mq/OrderService/Internal/Core/Ports/Repositories"
 	services "github.com/Prompiriya084/go-mq/OrderService/Internal/Core/Services"
 	utilities_validator "github.com/Prompiriya084/go-mq/OrderService/Internal/Core/Utilities/Validator"
+	models "github.com/Prompiriya084/go-mq/OrderService/Models"
 	unittest_eventbus "github.com/Prompiriya084/go-mq/OrderService/UnitTest/MockItem/MQ"
 	unittest_repositories "github.com/Prompiriya084/go-mq/OrderService/UnitTest/MockItem/Repositories"
 	routes "github.com/Prompiriya084/go-mq/OrderService/Web/Routes"

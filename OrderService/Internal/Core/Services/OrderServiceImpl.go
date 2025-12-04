@@ -6,9 +6,9 @@ import (
 	"time"
 
 	eventbus "github.com/Prompiriya084/go-mq/EventBus"
-	models "github.com/Prompiriya084/go-mq/Models"
 
 	ports_repositories "github.com/Prompiriya084/go-mq/OrderService/Internal/Core/Ports/Repositories"
+	models "github.com/Prompiriya084/go-mq/OrderService/Models"
 	"github.com/google/uuid"
 )
 

@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	models "github.com/Prompiriya084/go-mq/Models"
+	models "github.com/Prompiriya084/go-mq/InventoryService/Models"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

@@ -7,7 +7,7 @@ import (
 	eventbus "github.com/Prompiriya084/go-mq/Eventbus"
 	services "github.com/Prompiriya084/go-mq/InventoryService/Internal/Core/Services"
 	utilities_validator "github.com/Prompiriya084/go-mq/InventoryService/Internal/Utilities/Validator"
-	models "github.com/Prompiriya084/go-mq/Models"
+	models "github.com/Prompiriya084/go-mq/InventoryService/Models"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )

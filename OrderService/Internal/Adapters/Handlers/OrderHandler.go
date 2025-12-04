@@ -5,9 +5,10 @@ import (
 	"log"
 
 	eventbus "github.com/Prompiriya084/go-mq/EventBus"
-	models "github.com/Prompiriya084/go-mq/Models"
+
 	services "github.com/Prompiriya084/go-mq/OrderService/Internal/Core/Services"
 	utilities_validator "github.com/Prompiriya084/go-mq/OrderService/Internal/Core/Utilities/Validator"
+	models "github.com/Prompiriya084/go-mq/OrderService/Models"
 	"github.com/google/uuid"
 
 	"github.com/gofiber/fiber/v2"
@@ -29,6 +30,14 @@ func NewOrderHandler(service services.OrderService,
 	}
 }
 
+// GetAll godoc
+// @Summary Get all orders
+// @Description Get all orders
+// @Tags orders
+// @Accept json
+// @Produce json
+// @Success 200 {array} models.Order
+// @Router /api/orders [get]
 func (h *OrderHandler) GetAll(c *fiber.Ctx) error {
 	orders, err := h.service.GetAll(nil, nil)
 	fmt.Println("Orders : ", orders)

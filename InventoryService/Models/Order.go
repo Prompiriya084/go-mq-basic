@@ -6,9 +6,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// Order represents a order in the system
-// @Description Represents the Order entity in the system
-// @type Order
 type Order struct {
 	ID        uuid.UUID `json:"id" swaggerignore:"true"`
 	ProductID string    `json:"product_id" validate:"required"`

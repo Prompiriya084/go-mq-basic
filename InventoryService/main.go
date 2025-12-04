@@ -4,11 +4,13 @@ import (
 	"os"
 
 	eventbus "github.com/Prompiriya084/go-mq/Eventbus"
-	database "github.com/Prompiriya084/go-mq/Infrastructure/Database"
+
 	adapters_handlers "github.com/Prompiriya084/go-mq/InventoryService/Internal/Adapters/Handlers"
+	database "github.com/Prompiriya084/go-mq/InventoryService/Internal/Infrastructure/Database"
 	utilities_validator "github.com/Prompiriya084/go-mq/InventoryService/Internal/Utilities/Validator"
+	models "github.com/Prompiriya084/go-mq/InventoryService/Models"
 	routes "github.com/Prompiriya084/go-mq/InventoryService/Web/Routes"
-	models "github.com/Prompiriya084/go-mq/Models"
+
 	"github.com/gofiber/fiber/v2"
 
 	adapters_repositories "github.com/Prompiriya084/go-mq/InventoryService/Internal/Adapters/Repositories"

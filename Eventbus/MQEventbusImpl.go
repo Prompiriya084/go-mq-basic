@@ -150,3 +150,9 @@ func (c *mqEventBusImpl[Tentity]) Subscribe(queue string, handler func(data Tent
 		time.Sleep(5 * time.Second)
 	}
 }
+
+// func (c *mqEventBusImpl[Tentity]) Ack() error {
+// 	if err := c.channel.Ack(false); err != nil {
+// 		return err
+// 	}
+// }

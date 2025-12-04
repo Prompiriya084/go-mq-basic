@@ -8,7 +8,8 @@ import (
 
 	eventbus "github.com/Prompiriya084/go-mq/Eventbus"
 	ports_repositories "github.com/Prompiriya084/go-mq/InventoryService/Internal/Core/Ports/Repositories"
-	models "github.com/Prompiriya084/go-mq/Models"
+	models "github.com/Prompiriya084/go-mq/InventoryService/Models"
+
 	"github.com/google/uuid"
 )
 

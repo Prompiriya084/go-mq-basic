@@ -1,0 +1,38 @@
+basePath: /
+definitions:
+  models.Order:
+    properties:
+      product_id:
+        type: string
+      qty:
+        type: integer
+    required:
+    - product_id
+    - qty
+    type: object
+info:
+  contact: {}
+  description: API Example
+  title: Order Service API
+  version: "1.0"
+paths:
+  /api/orders:
+    get:
+      consumes:
+      - application/json
+      description: Get all orders
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Order'
+            type: array
+      summary: Get all orders
+      tags:
+      - orders
+schemes:
+- http
+swagger: "2.0"

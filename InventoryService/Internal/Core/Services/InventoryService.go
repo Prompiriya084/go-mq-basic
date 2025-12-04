@@ -1,6 +1,6 @@
 package services
 
-import models "github.com/Prompiriya084/go-mq/Models"
+import models "github.com/Prompiriya084/go-mq/InventoryService/Models"
 
 type InventoryService interface {
 	CheckStock(order *models.Order) error

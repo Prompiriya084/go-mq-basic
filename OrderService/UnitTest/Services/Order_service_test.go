@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"testing"
 
-	models "github.com/Prompiriya084/go-mq/Models"
 	services "github.com/Prompiriya084/go-mq/OrderService/Internal/Core/Services"
+	models "github.com/Prompiriya084/go-mq/OrderService/Models"
 	unittest_eventbus "github.com/Prompiriya084/go-mq/OrderService/UnitTest/MockItem/MQ"
 	unittest_repositories "github.com/Prompiriya084/go-mq/OrderService/UnitTest/MockItem/Repositories"
 	"github.com/google/uuid"
