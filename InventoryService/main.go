@@ -11,6 +11,7 @@ import (
 	models "github.com/Prompiriya084/go-mq/InventoryService/Models"
 	routes "github.com/Prompiriya084/go-mq/InventoryService/Web/Routes"
 
+	"github.com/gofiber/contrib/swagger"
 	"github.com/gofiber/fiber/v2"
 
 	adapters_repositories "github.com/Prompiriya084/go-mq/InventoryService/Internal/Adapters/Repositories"
@@ -28,9 +29,23 @@ func main() {
 	validator := utilities_validator.NewValidator()
 	inventoryHandler := adapters_handlers.NewInventoryHandler(inventoryService, mqEventbus, validator)
 
+	// Serve swagger.json
+	app.Static("/docs", "./docs")
+	// Correct swagger config (must NOT be nil)
+	cfg := swagger.Config{
+		Title: "Order Service API",
+		Path:  "swagger", // UI root
+		// BasePath: "/",       // Mount path
+		FilePath: "./docs/swagger.json",
+	}
+
+	// Generate handler (this is where your panic happened)
+	swaggerHandler := swagger.New(cfg)
+	app.Get("/swagger/*", swaggerHandler)
+
 	routes.InventorySetupRouter(app, inventoryHandler)
 
-	go inventoryHandler.CheckStock()
-	go inventoryHandler.ReverseStock()
+	// go inventoryHandler.CheckStock()
+	// go inventoryHandler.ReverseStock()
 	app.Listen(":8081")
 }

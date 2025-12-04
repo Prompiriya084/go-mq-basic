@@ -72,6 +72,15 @@ func (h *InventoryHandler) Create(c *fiber.Ctx) error {
 		"message": "Create stock successful.",
 	})
 }
+
+// GetAll godoc
+// @Summary Get all stocks
+// @Description Get all stocks
+// @Tags Inventory
+// @Accept json
+// @Produce json
+// @Success 200 {array} models.Inventory
+// @Router /api/inventory [get]
 func (h *InventoryHandler) GetAll(c *fiber.Ctx) error {
 	orders, err := h.service.GetAll(nil, nil)
 	fmt.Println("Stock : ", orders)
