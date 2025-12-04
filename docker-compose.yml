@@ -3,7 +3,7 @@ version: '3.8'
 services:
   postgres:
     image: postgres:latest
-    container_name: postgres-eiei
+    container_name: postgres-test
     environment:
       POSTGRES_DB: mydatabase
       POSTGRES_USER: myuser
@@ -32,7 +32,7 @@ services:
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     environment:
-      RABBITMQ_DEFAULT_USER: 'testMQ'
+      RABBITMQ_DEFAULT_USER: 'adminMQ'
       RABBITMQ_DEFAULT_PASS: 'password'
     ports: 
       - "15672:15672"
