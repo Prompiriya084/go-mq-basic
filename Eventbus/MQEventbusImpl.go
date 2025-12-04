@@ -2,6 +2,7 @@ package eventbus
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"sync"
 	"time"
@@ -72,8 +73,12 @@ func (c *mqEventBusImpl[Tentity]) connectConsumer(queue string) (<-chan amqp091.
 	if err := c.channel.Qos(1, 0, false); err != nil {
 		return nil, err
 	}
+
 	// Declare queue
-	_, err = c.channel.QueueDeclare(queue, true, false, false, false, nil)
+	// ❌ Remove this — no create allowed
+	// _, err := p.channel.QueueDeclare(...)
+	// ✔ Declare ONLY as passive (must already exist)
+	_, err = c.channel.QueueDeclarePassive(queue, true, false, false, false, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +95,10 @@ func (p *mqEventBusImpl[Tentity]) Publish(queue string, body []byte) error {
 		log.Printf("connect failed: %v", err)
 	}
 
-	_, err := p.channel.QueueDeclare(
+	// ❌ Remove this — no create allowed
+	// _, err := p.channel.QueueDeclare(...)
+	// ✔ Declare ONLY as passive (must already exist)
+	_, err := p.channel.QueueDeclarePassive(
 		queue,
 		true,
 		false,
@@ -113,6 +121,8 @@ func (p *mqEventBusImpl[Tentity]) Publish(queue string, body []byte) error {
 		_ = p.connectPublisher() // close and reconnect
 		return p.Publish(queue, body)
 	}
+
+	fmt.Println("Publish successful.")
 
 	return nil
 }

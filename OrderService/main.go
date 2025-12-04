@@ -41,15 +41,9 @@ func main() {
 		FilePath: "./docs/swagger.json",
 	}
 
-	// // Generate handler (this is where your panic happened)
+	// Generate handler (this is where your panic happened)
 	swaggerHandler := swagger.New(cfg)
 	app.Get("/swagger/*", swaggerHandler)
-
-	// app.Static("/swagger", "./docs") // serve swagger.json
-	// app.Get("/swagger/*", swagger.New(swagger.Config{
-	// 	Title:    "Order Service API",
-	// 	FilePath: "./docs/swagger.json",
-	// }))
 
 	mqOrderEventbus := eventbus.NewMQEventbus[models.Order](os.Getenv("RABBITMQ_URL"))
 	orderRepo := adapters_repositories.NewOrderRepository(db)

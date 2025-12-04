@@ -1,5 +1,10 @@
 basePath: /
 definitions:
+  dto.MessageResponse:
+    properties:
+      message:
+        type: string
+    type: object
   models.Order:
     properties:
       product_id:
@@ -32,7 +37,36 @@ paths:
             type: array
       summary: Get all orders
       tags:
-      - orders
+      - Orders
+    post:
+      consumes:
+      - application/json
+      description: Create a new order
+      parameters:
+      - description: Order info
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.Order'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Create order
+      tags:
+      - Orders
 schemes:
 - http
 swagger: "2.0"

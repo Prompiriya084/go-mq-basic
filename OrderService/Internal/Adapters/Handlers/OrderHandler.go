@@ -33,7 +33,7 @@ func NewOrderHandler(service services.OrderService,
 // GetAll godoc
 // @Summary Get all orders
 // @Description Get all orders
-// @Tags orders
+// @Tags Orders
 // @Accept json
 // @Produce json
 // @Success 200 {array} models.Order
@@ -75,6 +75,17 @@ func (h *OrderHandler) Get(c *fiber.Ctx) error {
 	})
 }
 
+// CreateOrder godoc
+// @Summary Create order
+// @Description Create a new order
+// @Tags Orders
+// @Accept json
+// @Produce json
+// @Param request body models.Order true "Order info"
+// @Success 201 {object} dto.MessageResponse
+// @Failure 400 {string} string "Bad Request"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /api/orders [post]
 func (h *OrderHandler) Create(c *fiber.Ctx) error {
 	var order models.Order
 	if err := c.BodyParser(&order); err != nil {
