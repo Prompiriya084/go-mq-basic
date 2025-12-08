@@ -31,7 +31,7 @@ func (r *repositoryImpl[Tentity]) GetAll(filters *Tentity, preload []string) ([]
 	return entities, nil
 }
 func (r *repositoryImpl[Tentity]) Get(filters *Tentity, preload []string) (*Tentity, error) {
-	var entity *Tentity
+	entity := new(Tentity)
 	query := r.db
 	for _, p := range preload {
 		query = query.Preload(p)

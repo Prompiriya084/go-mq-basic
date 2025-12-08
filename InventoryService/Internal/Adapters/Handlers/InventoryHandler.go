@@ -9,7 +9,6 @@ import (
 	utilities_validator "github.com/Prompiriya084/go-mq/InventoryService/Internal/Utilities/Validator"
 	models "github.com/Prompiriya084/go-mq/InventoryService/Models"
 	"github.com/gofiber/fiber/v2"
-	"github.com/google/uuid"
 )
 
 type InventoryHandler struct {
@@ -69,11 +68,12 @@ func (h *InventoryHandler) Create(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(fiber.Map{
-		"message": "Create stock successful.",
+		"product_id": inventory.ProductID,
+		"message":    "Created stock successful.",
 	})
 }
 
-// GetAll godoc
+// Inventory godoc
 // @Summary Get all stocks
 // @Description Get all stocks
 // @Tags Inventory
@@ -96,14 +96,23 @@ func (h *InventoryHandler) GetAll(c *fiber.Ctx) error {
 	})
 }
 
+// Inventory godoc
+// @Summary Get stocks By Id
+// @Description Get stocks by product Id
+// @Tags Inventory
+// @Accept json
+// @Produce json
+// @Param   id   path     string  true  "The ID of the resource"
+// @Success 200 {array} models.Inventory
+// @Router /api/inventory/{id} [get]
 func (h *InventoryHandler) Get(c *fiber.Ctx) error {
-	orderID, err := uuid.Parse(c.Params("id"))
-	if err != nil {
+	// orderID, err := uuid.Parse(c.Params("id"))
+	productId := c.Params("id")
+	if productId == "" {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
-
 	orders, err := h.service.Get(&models.Inventory{
-		ID: orderID,
+		ProductID: productId,
 	}, nil)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
@@ -118,21 +127,43 @@ func (h *InventoryHandler) Get(c *fiber.Ctx) error {
 	})
 }
 
-// func (h *InventoryHandler) Update() {
-// 	err := h.bus.Subscribe("order.update", func(order models.Inventory) error {
+// UpdateInventory godoc
+// @Summary Update Inventory
+// @Description Update stocks
+// @Tags Inventory
+// @Accept json
+// @Produce json
+// @Param request body models.Inventory true "Inventory info"
+// @Param   id   path     string  true  "The ID of the resource"
+// @Success 200 {object} dto.MessageResponse
+// @Failure 400 {string} string "Bad Request"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /api/inventory/{id} [put]
+func (h *InventoryHandler) Update(c *fiber.Ctx) error {
+	productId := c.Params("id")
+	if productId == "" {
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
 
-// 		log.Printf("✅ Processed Order: ID=%s", order.ID)
-// 		if err := h.service.Update(&order); err != nil {
-// 			log.Printf("❌ DB update failed: %v", err)
-// 			return err
-// 		}
+	var updatedItem models.Inventory
+	if err := c.BodyParser(&updatedItem); err != nil {
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+	updatedItem.ProductID = productId
 
-// 		return nil //return null when wanting to acknowledge when process complete
-// 	})
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// }
+	if err := h.validator.ValidateStruct(updatedItem); err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+	}
+	if err := h.service.Update(&updatedItem); err != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
+	}
+
+	return c.JSON(fiber.Map{
+		"product_id": updatedItem.ProductID,
+		"message":    "Updated stock successful.",
+	})
+}
+
 // func (h *InventoryHandler) Cancel() {
 // 	err := h.bus.Subscribe("order.cancel", func(order models.Inventory) error {
 

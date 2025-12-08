@@ -30,7 +30,7 @@ func (s *orderServiceImpl) GetAll(filters *models.Order, preload []string) ([]*m
 func (s *orderServiceImpl) Get(filters *models.Order, preload []string) (*models.Order, error) {
 	return s.repo.Get(filters, preload)
 }
-func (s *orderServiceImpl) Create(order *models.Order) error {
+func (s *orderServiceImpl) Create(order *models.Order) (string, error) {
 	errMessage := "Failed to create new order :"
 
 	order.ID = uuid.New()
@@ -38,7 +38,7 @@ func (s *orderServiceImpl) Create(order *models.Order) error {
 	order.CreatedAt = time.Now()
 	order.UpdatedAt = time.Now()
 	if err := s.repo.Add(order); err != nil {
-		return fmt.Errorf("%s %w", errMessage, err)
+		return "", fmt.Errorf("%s %w", errMessage, err)
 	}
 
 	byteMessage, err := json.Marshal(&models.Order{
@@ -47,12 +47,13 @@ func (s *orderServiceImpl) Create(order *models.Order) error {
 		Qty:       order.Qty,
 	})
 	if err != nil {
-		return fmt.Errorf("%s %w", errMessage, err)
+		return "", fmt.Errorf("%s %w", errMessage, err)
 	}
 	if err := s.bus.Publish("order.created", byteMessage); err != nil {
-		return fmt.Errorf("%s %w", errMessage, err)
+		return "", fmt.Errorf("%s %w", errMessage, err)
 	}
-	return nil
+
+	return order.ID.String(), nil
 }
 func (s *orderServiceImpl) Update(order *models.Order) error {
 	errMessage := "Failed to update order :"

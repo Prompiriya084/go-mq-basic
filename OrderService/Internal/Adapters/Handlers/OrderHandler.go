@@ -53,6 +53,15 @@ func (h *OrderHandler) GetAll(c *fiber.Ctx) error {
 	})
 }
 
+// GetAll godoc
+// @Summary Get Order By Id
+// @Description Get order by Id
+// @Tags Orders
+// @Accept json
+// @Produce json
+// @Param   id   path     string  true  "The ID of the resource"
+// @Success 200 {array} models.Order
+// @Router /api/orders/{id} [get]
 func (h *OrderHandler) Get(c *fiber.Ctx) error {
 	orderID, err := uuid.Parse(c.Params("id"))
 	if err != nil {
@@ -82,7 +91,7 @@ func (h *OrderHandler) Get(c *fiber.Ctx) error {
 // @Accept json
 // @Produce json
 // @Param request body models.Order true "Order info"
-// @Success 201 {object} dto.MessageResponse
+// @Success 202 {object} dto.MessageResponse
 // @Failure 400 {string} string "Bad Request"
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /api/orders [post]
@@ -95,15 +104,30 @@ func (h *OrderHandler) Create(c *fiber.Ctx) error {
 	if err := h.validator.ValidateStruct(order); err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
-	if err := h.service.Create(&order); err != nil {
+	orderId, err := h.service.Create(&order)
+	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
 	}
 
-	return c.JSON(fiber.Map{
-		"message": "Create order successful.",
+	return c.Status(202).JSON(fiber.Map{
+		"order_id": orderId,
+		"status":   "PENDING",
+		"message":  "Order received. Waiting for inventory confirmation.",
 	})
 }
 
+// UpdateOrder godoc
+// @Summary Update order
+// @Description Update an order
+// @Tags Orders
+// @Accept json
+// @Produce json
+// @Param request body models.Order true "Order info"
+// @Param   id   path     string  true  "The ID of the resource"
+// @Success 201 {object} dto.MessageResponse
+// @Failure 400 {string} string "Bad Request"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /api/orders/{id} [put]
 func (h *OrderHandler) Update(c *fiber.Ctx) error {
 	orderId, err := uuid.Parse(c.Params("id"))
 	if err != nil {
@@ -124,24 +148,37 @@ func (h *OrderHandler) Update(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(fiber.Map{
-		"message": "Update order successful.",
+		"order_id": orderId,
+		"message":  "Update order successful.",
 	})
 }
 
+// CreateOrder godoc
+// @Summary Create order
+// @Description Create a new order
+// @Tags Orders
+// @Accept json
+// @Produce json
+// @Param   id   path     string  true  "The ID of the resource"
+// @Success 202 {object} dto.MessageResponse
+// @Failure 400 {string} string "Bad Request"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /api/orders [delete]
 func (h *OrderHandler) Delete(c *fiber.Ctx) error {
-	orderID, err := uuid.Parse(c.Params("id"))
+	orderId, err := uuid.Parse(c.Params("id"))
 	if err != nil {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 
 	if err := h.service.Delete(&models.Order{
-		ID: orderID,
+		ID: orderId,
 	}); err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
 	}
 
 	return c.JSON(fiber.Map{
-		"message": "Delete order successful.",
+		"order_id": orderId,
+		"message":  "Deleted order successful.",
 	})
 }
 

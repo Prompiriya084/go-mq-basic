@@ -147,7 +147,7 @@ func TestCreate(t *testing.T) {
 			mockEventbus := &unittest_eventbus.MockEventbus[models.Order]{}
 			services := services.NewOrderService(mockRepo, mockEventbus)
 
-			response := services.Create(tc.Params)
+			_, response := services.Create(tc.Params)
 
 			var result bool
 			if response == nil {

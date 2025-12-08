@@ -78,8 +78,11 @@ func (c *mqEventBusImpl[Tentity]) connectConsumer(queue string) (<-chan amqp091.
 	// ❌ Remove this — no create allowed
 	// _, err := p.channel.QueueDeclare(...)
 	// ✔ Declare ONLY as passive (must already exist)
-	_, err = c.channel.QueueDeclarePassive(queue, true, false, false, false, nil)
-	if err != nil {
+	// _, err = c.channel.QueueDeclarePassive(queue, true, false, false, false, nil)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	if err := c.ensureQueue(queue); err != nil {
 		return nil, err
 	}
 
@@ -89,6 +92,25 @@ func (c *mqEventBusImpl[Tentity]) connectConsumer(queue string) (<-chan amqp091.
 	}
 
 	return msgs, nil
+}
+func (c *mqEventBusImpl[Tentity]) ensureQueue(queue string) error {
+	_, err := c.channel.QueueDeclarePassive(queue, true, false, false, false, nil)
+	if err == nil {
+		return nil
+	}
+	_, err = c.channel.QueueDeclare(
+		queue,
+		true,  // durable
+		false, // autoDelete
+		false, // exclusive
+		false, // noWait
+		nil,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to declare queue %s: %w", queue, err)
+	}
+
+	return nil
 }
 func (p *mqEventBusImpl[Tentity]) Publish(queue string, body []byte) error {
 	if err := p.connectPublisher(); err != nil {

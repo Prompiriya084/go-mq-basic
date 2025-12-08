@@ -1,4 +1,9 @@
 definitions:
+  dto.MessageResponse:
+    properties:
+      message:
+        type: string
+    type: object
   models.Inventory:
     properties:
       product_id:
@@ -27,6 +32,63 @@ paths:
               $ref: '#/definitions/models.Inventory'
             type: array
       summary: Get all stocks
+      tags:
+      - Inventory
+  /api/inventory/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get stocks by product Id
+      parameters:
+      - description: The ID of the resource
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Inventory'
+            type: array
+      summary: Get stocks By Id
+      tags:
+      - Inventory
+    put:
+      consumes:
+      - application/json
+      description: Update stocks
+      parameters:
+      - description: Inventory info
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.Inventory'
+      - description: The ID of the resource
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Update Inventory
       tags:
       - Inventory
 swagger: "2.0"
