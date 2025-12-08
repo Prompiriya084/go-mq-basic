@@ -53,6 +53,18 @@ func (h *InventoryHandler) ReverseStock() {
 		panic(err)
 	}
 }
+
+// Inventory godoc
+// @Summary Create stocks
+// @Description Create a new stock
+// @Tags Inventory
+// @Accept json
+// @Produce json
+// @Param request body models.Inventory true "Inventory info"
+// @Success 202 {object} dto.MessageResponse
+// @Failure 400 {string} string "Bad Request"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /api/inventory [post]
 func (h *InventoryHandler) Create(c *fiber.Ctx) error {
 	var inventory models.Inventory
 

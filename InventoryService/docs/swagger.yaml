@@ -34,6 +34,35 @@ paths:
       summary: Get all stocks
       tags:
       - Inventory
+    post:
+      consumes:
+      - application/json
+      description: Create a new stock
+      parameters:
+      - description: Inventory info
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.Inventory'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/dto.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Create stocks
+      tags:
+      - Inventory
   /api/inventory/{id}:
     get:
       consumes:
