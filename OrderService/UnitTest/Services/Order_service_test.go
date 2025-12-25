@@ -263,7 +263,7 @@ func TestDelete(t *testing.T) {
 			mockEventbus := &unittest_eventbus.MockEventbus[models.Order]{}
 			services := services.NewOrderService(mockRepo, mockEventbus)
 
-			response := services.Delete(tc.Params)
+			response := services.Delete(tc.Params.ID.String())
 
 			var result bool
 			if response == nil {

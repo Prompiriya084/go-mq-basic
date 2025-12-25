@@ -18,16 +18,14 @@ import (
 	services "github.com/Prompiriya084/go-mq/InventoryService/Internal/Core/Services"
 )
 
+// @title Inventory Service API
+// @version 1.0
+// @description API Example
+// @BasePath /
+// @schemes http
 func main() {
 	app := fiber.New()
 	db := database.InitDb()
-
-	repo := adapters_repositories.NewInventoryRepository(db)
-	mqEventbus := eventbus.NewMQEventbus[models.Order](os.Getenv("RABBITMQ_URL"))
-	inventoryService := services.NewInventoryService(repo, mqEventbus)
-
-	validator := utilities_validator.NewValidator()
-	inventoryHandler := adapters_handlers.NewInventoryHandler(inventoryService, mqEventbus, validator)
 
 	// Serve swagger.json
 	app.Static("/docs", "./docs")
@@ -42,6 +40,13 @@ func main() {
 	// Generate handler (this is where your panic happened)
 	swaggerHandler := swagger.New(cfg)
 	app.Get("/swagger/*", swaggerHandler)
+
+	repo := adapters_repositories.NewInventoryRepository(db)
+	mqEventbus := eventbus.NewMQEventbus[models.Order](os.Getenv("RABBITMQ_URL"))
+	inventoryService := services.NewInventoryService(repo, mqEventbus)
+
+	validator := utilities_validator.NewValidator()
+	inventoryHandler := adapters_handlers.NewInventoryHandler(inventoryService, mqEventbus, validator)
 
 	routes.InventorySetupRouter(app, inventoryHandler)
 

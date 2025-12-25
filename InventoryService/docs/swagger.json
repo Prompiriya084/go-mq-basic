@@ -1,8 +1,15 @@
 {
+    "schemes": [
+        "http"
+    ],
     "swagger": "2.0",
     "info": {
-        "contact": {}
+        "description": "API Example",
+        "title": "Inventory Service API",
+        "contact": {},
+        "version": "1.0"
     },
+    "basePath": "/",
     "paths": {
         "/api/inventory": {
             "get": {
@@ -130,6 +137,48 @@
                             "$ref": "#/definitions/models.Inventory"
                         }
                     },
+                    {
+                        "type": "string",
+                        "description": "The ID of the resource",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.MessageResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete stocks",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Delete Inventory",
+                "parameters": [
                     {
                         "type": "string",
                         "description": "The ID of the resource",

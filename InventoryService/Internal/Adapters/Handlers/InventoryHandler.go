@@ -19,8 +19,9 @@ type InventoryHandler struct {
 
 func NewInventoryHandler(service services.InventoryService, bus eventbus.EventBus[models.Order], validator utilities_validator.Validator) *InventoryHandler {
 	return &InventoryHandler{
-		service: service,
-		bus:     bus,
+		service:   service,
+		bus:       bus,
+		validator: validator,
 	}
 }
 func (h *InventoryHandler) CheckStock() {
@@ -123,23 +124,23 @@ func (h *InventoryHandler) Get(c *fiber.Ctx) error {
 	if productId == "" {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
-	orders, err := h.service.Get(&models.Inventory{
+	existingStocks, err := h.service.Get(&models.Inventory{
 		ProductID: productId,
 	}, nil)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
 	}
 
-	if orders == nil {
+	if existingStocks == nil {
 		return c.Status(fiber.StatusNotFound).SendString("Data not found.")
 	}
 
 	return c.JSON(fiber.Map{
-		"data": orders,
+		"data": existingStocks,
 	})
 }
 
-// UpdateInventory godoc
+// Inventory godoc
 // @Summary Update Inventory
 // @Description Update stocks
 // @Tags Inventory
@@ -153,6 +154,7 @@ func (h *InventoryHandler) Get(c *fiber.Ctx) error {
 // @Router /api/inventory/{id} [put]
 func (h *InventoryHandler) Update(c *fiber.Ctx) error {
 	productId := c.Params("id")
+	fmt.Println("Param:", productId)
 	if productId == "" {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
@@ -166,6 +168,8 @@ func (h *InventoryHandler) Update(c *fiber.Ctx) error {
 	if err := h.validator.ValidateStruct(updatedItem); err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
+	fmt.Println("Show model :", updatedItem)
+
 	if err := h.service.Update(&updatedItem); err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
 	}
@@ -176,18 +180,30 @@ func (h *InventoryHandler) Update(c *fiber.Ctx) error {
 	})
 }
 
-// func (h *InventoryHandler) Cancel() {
-// 	err := h.bus.Subscribe("order.cancel", func(order models.Inventory) error {
+// Inventory godoc
+// @Summary Delete Inventory
+// @Description Delete stocks
+// @Tags Inventory
+// @Accept json
+// @Produce json
+// @Param   id   path     string  true  "The ID of the resource"
+// @Success 200 {object} dto.MessageResponse
+// @Failure 400 {string} string "Bad Request"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /api/inventory/{id} [delete]
+func (h *InventoryHandler) Delete(c *fiber.Ctx) error {
+	productId := c.Params("id")
+	fmt.Println("Param:", productId)
+	if productId == "" {
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
 
-// 		log.Printf("✅ Processed Order: ID=%s", order.ID)
-// 		if err := h.service.Delete(&order); err != nil {
-// 			log.Printf("❌ DB delete failed: %v", err)
-// 			return err
-// 		}
+	if err := h.service.Delete(productId); err != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
+	}
 
-// 		return nil //return null when wanting to acknowledge when process complete
-// 	})
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// }
+	return c.JSON(fiber.Map{
+		"product_id": productId,
+		"message":    "Deleted stock successful.",
+	})
+}

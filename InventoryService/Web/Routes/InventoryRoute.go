@@ -10,4 +10,6 @@ func InventorySetupRouter(app *fiber.App, handler *adapters_handlers.InventoryHa
 	inventyApp.Post("", handler.Create)
 	inventyApp.Get("", handler.GetAll)
 	inventyApp.Get("/:id", handler.Get)
+	inventyApp.Put("/:id", handler.Update)
+	inventyApp.Delete("/:id", handler.Delete)
 }

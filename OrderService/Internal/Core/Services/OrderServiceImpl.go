@@ -68,34 +68,41 @@ func (s *orderServiceImpl) Update(order *models.Order) error {
 	}
 	existingOrder.ProductID = order.ProductID
 	existingOrder.UpdatedAt = time.Now()
-	byteMessage, err := json.Marshal(existingOrder)
-	if err != nil {
-		return fmt.Errorf("%s %w", errMessage, err)
-	}
-	if err := s.bus.Publish("order.update", byteMessage); err != nil {
+
+	if err := s.repo.Update(existingOrder); err != nil {
 		return fmt.Errorf("%s %w", errMessage, err)
 	}
 	return nil
 }
-func (s *orderServiceImpl) Delete(order *models.Order) error {
+func (s *orderServiceImpl) Delete(orderId string) error {
 	errMessage := "Failed to delete order :"
-	selectedOrder, err := s.Get(&models.Order{
-		ID: order.ID,
+	uuidOrder, err := uuid.Parse(orderId)
+	if err != nil {
+		return fmt.Errorf("%s %w", errMessage, err)
+	}
+	deletedOrder, err := s.Get(&models.Order{
+		ID: uuidOrder,
 	}, nil)
 	if err != nil {
 		return fmt.Errorf("%s %w", errMessage, err)
 	}
-	if selectedOrder == nil {
-		return fmt.Errorf("%s The order %s does not exists", errMessage, order.ID.String())
+	if deletedOrder == nil {
+		return fmt.Errorf("%s The order %s does not exists", errMessage, orderId)
 	}
-	selectedOrder.DeleteAt = time.Now()
+	if err := s.repo.Delete(deletedOrder); err != nil {
+		return fmt.Errorf("%s %w", errMessage, err)
+	}
 
-	byteMessage, err := json.Marshal(selectedOrder)
-	if err != nil {
-		return fmt.Errorf("%s %w", errMessage, err)
+	return nil
+}
+
+// For Message queue
+func (s *orderServiceImpl) InventoryConfirmed(evt *models.Order) error {
+	evt.Status = "SUCCESS"
+	evt.UpdatedAt = time.Now()
+	if err := s.repo.Update(evt); err != nil {
+		return err
 	}
-	if err := s.bus.Publish("order.cancel", byteMessage); err != nil {
-		return fmt.Errorf("%s %w", errMessage, err)
-	}
+
 	return nil
 }

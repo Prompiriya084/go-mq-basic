@@ -30,7 +30,7 @@ func NewOrderHandler(service services.OrderService,
 	}
 }
 
-// GetAll godoc
+// Order godoc
 // @Summary Get all orders
 // @Description Get all orders
 // @Tags Orders
@@ -53,7 +53,7 @@ func (h *OrderHandler) GetAll(c *fiber.Ctx) error {
 	})
 }
 
-// GetAll godoc
+// Order godoc
 // @Summary Get Order By Id
 // @Description Get order by Id
 // @Tags Orders
@@ -84,7 +84,7 @@ func (h *OrderHandler) Get(c *fiber.Ctx) error {
 	})
 }
 
-// CreateOrder godoc
+// Order godoc
 // @Summary Create order
 // @Description Create a new order
 // @Tags Orders
@@ -116,7 +116,7 @@ func (h *OrderHandler) Create(c *fiber.Ctx) error {
 	})
 }
 
-// UpdateOrder godoc
+// Order godoc
 // @Summary Update order
 // @Description Update an order
 // @Tags Orders
@@ -153,7 +153,7 @@ func (h *OrderHandler) Update(c *fiber.Ctx) error {
 	})
 }
 
-// CreateOrder godoc
+// Order godoc
 // @Summary Create order
 // @Description Create a new order
 // @Tags Orders
@@ -165,14 +165,12 @@ func (h *OrderHandler) Update(c *fiber.Ctx) error {
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /api/orders [delete]
 func (h *OrderHandler) Delete(c *fiber.Ctx) error {
-	orderId, err := uuid.Parse(c.Params("id"))
-	if err != nil {
+	orderId := c.Params("id")
+	if orderId == "" {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 
-	if err := h.service.Delete(&models.Order{
-		ID: orderId,
-	}); err != nil {
+	if err := h.service.Delete(orderId); err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
 	}
 
@@ -186,10 +184,27 @@ func (h *OrderHandler) InventoryConfirmed() {
 	err := h.bus.Subscribe("inventory.checked", func(param models.Order) error {
 
 		log.Printf("✅ Processed Order: %v", param)
-		// if err := h.service.ReverseStock(&param); err != nil {
-		// 	log.Printf("❌ Reverse stock failed: Order: %v, Exception: %v", param, err)
-		// 	return err
-		// }
+		param.Status = "COMPLETED"
+		if err := h.service.Update(&param); err != nil {
+			log.Println(err.Error())
+			return err
+		}
+
+		return nil //return null when wanting to acknowledge when process complete
+	})
+	if err != nil {
+		panic(err)
+	}
+}
+func (h *OrderHandler) InventoryFailed() {
+	err := h.bus.Subscribe("inventory.failed", func(evt models.Order) error {
+
+		log.Printf("✅ Processed Order: %v", evt)
+		evt.Status = "FAILED"
+		if err := h.service.Update(&evt); err != nil {
+			log.Println(err.Error())
+			return err
+		}
 
 		return nil //return null when wanting to acknowledge when process complete
 	})
