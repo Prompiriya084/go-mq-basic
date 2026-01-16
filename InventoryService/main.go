@@ -1,14 +1,9 @@
 package main
 
 import (
-	"os"
-
-	eventbus "github.com/Prompiriya084/go-mq/Eventbus"
-
 	adapters_handlers "github.com/Prompiriya084/go-mq/InventoryService/Internal/Adapters/Handlers"
 	database "github.com/Prompiriya084/go-mq/InventoryService/Internal/Infrastructure/Database"
 	utilities_validator "github.com/Prompiriya084/go-mq/InventoryService/Internal/Utilities/Validator"
-	models "github.com/Prompiriya084/go-mq/InventoryService/Models"
 	routes "github.com/Prompiriya084/go-mq/InventoryService/Web/Routes"
 
 	"github.com/gofiber/contrib/swagger"
@@ -42,15 +37,17 @@ func main() {
 	app.Get("/swagger/*", swaggerHandler)
 
 	repo := adapters_repositories.NewInventoryRepository(db)
-	mqEventbus := eventbus.NewMQEventbus[models.Order](os.Getenv("RABBITMQ_URL"))
-	inventoryService := services.NewInventoryService(repo, mqEventbus)
+	// mqEventbus := eventbus.NewMQEventbus[models.Order](os.Getenv("RABBITMQ_URL"))
+
+	inventoryAPIService := services.NewInventoryAPIService(repo, mqEventbus)
 
 	validator := utilities_validator.NewValidator()
-	inventoryHandler := adapters_handlers.NewInventoryHandler(inventoryService, mqEventbus, validator)
+	inventoryAPIHandler := adapters_handlers.NewInventoryAPIHandler(inventoryAPIService, validator)
 
-	routes.InventorySetupRouter(app, inventoryHandler)
+	routes.InventorySetupRouter(app, inventoryAPIHandler)
 
 	// go inventoryHandler.CheckStock()
 	// go inventoryHandler.ReverseStock()
+
 	app.Listen(":8081")
 }

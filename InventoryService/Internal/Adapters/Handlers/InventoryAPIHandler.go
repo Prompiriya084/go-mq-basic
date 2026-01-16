@@ -2,58 +2,55 @@ package adapters_handlers
 
 import (
 	"fmt"
-	"log"
 
-	eventbus "github.com/Prompiriya084/go-mq/Eventbus"
 	services "github.com/Prompiriya084/go-mq/InventoryService/Internal/Core/Services"
 	utilities_validator "github.com/Prompiriya084/go-mq/InventoryService/Internal/Utilities/Validator"
 	models "github.com/Prompiriya084/go-mq/InventoryService/Models"
 	"github.com/gofiber/fiber/v2"
 )
 
-type InventoryHandler struct {
-	service   services.InventoryService
-	bus       eventbus.EventBus[models.Order]
+type InventoryAPIHandler struct {
+	service   services.InventoryAPIService
 	validator utilities_validator.Validator
 }
 
-func NewInventoryHandler(service services.InventoryService, bus eventbus.EventBus[models.Order], validator utilities_validator.Validator) *InventoryHandler {
-	return &InventoryHandler{
+func NewInventoryAPIHandler(service services.InventoryAPIService, validator utilities_validator.Validator) *InventoryAPIHandler {
+	return &InventoryAPIHandler{
 		service:   service,
-		bus:       bus,
 		validator: validator,
 	}
 }
-func (h *InventoryHandler) CheckStock() {
-	err := h.bus.Subscribe("order.created", func(param models.Order) error {
 
-		log.Printf("✅ Processed Order: %v", param)
-		if err := h.service.CheckStock(&param); err != nil {
-			log.Printf("❌ Check stock failed: Order: %v, Exception: %v", param, err)
-			return err
-		}
+// func (h *InventoryHandler) CheckStock() {
+// 	err := h.bus.Subscribe("order.created", func(param models.Order) error {
 
-		return nil //return null when wanting to acknowledge when process complete
-	})
-	if err != nil {
-		panic(err)
-	}
-}
-func (h *InventoryHandler) ReverseStock() {
-	err := h.bus.Subscribe("payment.failed", func(param models.Order) error {
+// 		log.Printf("✅ Processed Order: %v", param)
+// 		if err := h.service.CheckStock(&param); err != nil {
+// 			log.Printf("❌ Check stock failed: Order: %v, Exception: %v", param, err)
+// 			return err
+// 		}
 
-		log.Printf("✅ Processed Order: %v", param)
-		if err := h.service.ReverseStock(&param); err != nil {
-			log.Printf("❌ Reverse stock failed: Order: %v, Exception: %v", param, err)
-			return err
-		}
+// 		return nil //return null when wanting to acknowledge when process complete
+// 	})
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// }
+// func (h *InventoryHandler) ReverseStock() {
+// 	err := h.bus.Subscribe("payment.failed", func(param models.Order) error {
 
-		return nil //return null when wanting to acknowledge when process complete
-	})
-	if err != nil {
-		panic(err)
-	}
-}
+// 		log.Printf("✅ Processed Order: %v", param)
+// 		if err := h.service.ReverseStock(&param); err != nil {
+// 			log.Printf("❌ Reverse stock failed: Order: %v, Exception: %v", param, err)
+// 			return err
+// 		}
+
+// 		return nil //return null when wanting to acknowledge when process complete
+// 	})
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// }
 
 // Inventory godoc
 // @Summary Create stocks
@@ -66,7 +63,7 @@ func (h *InventoryHandler) ReverseStock() {
 // @Failure 400 {string} string "Bad Request"
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /api/inventory [post]
-func (h *InventoryHandler) Create(c *fiber.Ctx) error {
+func (h *InventoryAPIHandler) Create(c *fiber.Ctx) error {
 	var inventory models.Inventory
 
 	if err := c.BodyParser(&inventory); err != nil {
@@ -94,7 +91,7 @@ func (h *InventoryHandler) Create(c *fiber.Ctx) error {
 // @Produce json
 // @Success 200 {array} models.Inventory
 // @Router /api/inventory [get]
-func (h *InventoryHandler) GetAll(c *fiber.Ctx) error {
+func (h *InventoryAPIHandler) GetAll(c *fiber.Ctx) error {
 	orders, err := h.service.GetAll(nil, nil)
 	fmt.Println("Stock : ", orders)
 	if err != nil {
@@ -118,7 +115,7 @@ func (h *InventoryHandler) GetAll(c *fiber.Ctx) error {
 // @Param   id   path     string  true  "The ID of the resource"
 // @Success 200 {array} models.Inventory
 // @Router /api/inventory/{id} [get]
-func (h *InventoryHandler) Get(c *fiber.Ctx) error {
+func (h *InventoryAPIHandler) Get(c *fiber.Ctx) error {
 	// orderID, err := uuid.Parse(c.Params("id"))
 	productId := c.Params("id")
 	if productId == "" {
@@ -152,7 +149,7 @@ func (h *InventoryHandler) Get(c *fiber.Ctx) error {
 // @Failure 400 {string} string "Bad Request"
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /api/inventory/{id} [put]
-func (h *InventoryHandler) Update(c *fiber.Ctx) error {
+func (h *InventoryAPIHandler) Update(c *fiber.Ctx) error {
 	productId := c.Params("id")
 	fmt.Println("Param:", productId)
 	if productId == "" {
@@ -191,7 +188,7 @@ func (h *InventoryHandler) Update(c *fiber.Ctx) error {
 // @Failure 400 {string} string "Bad Request"
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /api/inventory/{id} [delete]
-func (h *InventoryHandler) Delete(c *fiber.Ctx) error {
+func (h *InventoryAPIHandler) Delete(c *fiber.Ctx) error {
 	productId := c.Params("id")
 	fmt.Println("Param:", productId)
 	if productId == "" {
