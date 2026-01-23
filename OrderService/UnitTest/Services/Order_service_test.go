@@ -7,7 +7,8 @@ import (
 
 	services "github.com/Prompiriya084/go-mq/OrderService/Internal/Core/Services"
 	models "github.com/Prompiriya084/go-mq/OrderService/Models"
-	unittest_eventbus "github.com/Prompiriya084/go-mq/OrderService/UnitTest/MockItem/MQ"
+
+	unittest_eventbus "github.com/Prompiriya084/go-mq/OrderService/UnitTest/MockItem/Eventbus"
 	unittest_repositories "github.com/Prompiriya084/go-mq/OrderService/UnitTest/MockItem/Repositories"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -51,8 +52,8 @@ func TestGetAll(t *testing.T) {
 					},
 				},
 			}
-			mockEventbus := &unittest_eventbus.MockEventbus[models.Order]{}
-			services := services.NewOrderService(mockRepo, mockEventbus)
+			mockEventbus := unittest_eventbus.NewMockRabbitPublisher()
+			services := services.NewOrderAPIService(mockRepo, mockEventbus)
 			response, err := services.GetAll(tc.sendingFilter, nil)
 
 			assert.NoError(t, err)
@@ -91,8 +92,8 @@ func TestGet(t *testing.T) {
 					},
 				},
 			}
-			mockEventbus := &unittest_eventbus.MockEventbus[models.Order]{}
-			services := services.NewOrderService(mockRepo, mockEventbus)
+			mockEventbus := unittest_eventbus.NewMockRabbitPublisher()
+			services := services.NewOrderAPIService(mockRepo, mockEventbus)
 			response, err := services.Get(nil, nil)
 			fmt.Println("Response: ", response)
 			fmt.Println("Expection: ", tc.expection)
@@ -144,8 +145,8 @@ func TestCreate(t *testing.T) {
 					},
 				},
 			}
-			mockEventbus := &unittest_eventbus.MockEventbus[models.Order]{}
-			services := services.NewOrderService(mockRepo, mockEventbus)
+			mockEventbus := unittest_eventbus.NewMockRabbitPublisher()
+			services := services.NewOrderAPIService(mockRepo, mockEventbus)
 
 			_, response := services.Create(tc.Params)
 
@@ -202,8 +203,8 @@ func TestGetUpdate(t *testing.T) {
 					},
 				},
 			}
-			mockEventbus := &unittest_eventbus.MockEventbus[models.Order]{}
-			services := services.NewOrderService(mockRepo, mockEventbus)
+			mockEventbus := unittest_eventbus.NewMockRabbitPublisher()
+			services := services.NewOrderAPIService(mockRepo, mockEventbus)
 
 			response := services.Update(tc.Params)
 
@@ -260,8 +261,8 @@ func TestDelete(t *testing.T) {
 					},
 				},
 			}
-			mockEventbus := &unittest_eventbus.MockEventbus[models.Order]{}
-			services := services.NewOrderService(mockRepo, mockEventbus)
+			mockEventbus := unittest_eventbus.NewMockRabbitPublisher()
+			services := services.NewOrderAPIService(mockRepo, mockEventbus)
 
 			response := services.Delete(tc.Params.ID.String())
 

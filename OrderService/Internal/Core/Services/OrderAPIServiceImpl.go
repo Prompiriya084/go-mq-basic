@@ -1,36 +1,35 @@
 package services
 
 import (
-	"encoding/json"
 	"fmt"
 	"time"
 
-	eventbus "github.com/Prompiriya084/go-mq/EventBus"
-
+	ports_eventbus "github.com/Prompiriya084/go-mq/OrderService/Internal/Core/Ports/Eventbus"
 	ports_repositories "github.com/Prompiriya084/go-mq/OrderService/Internal/Core/Ports/Repositories"
 	models "github.com/Prompiriya084/go-mq/OrderService/Models"
+	models_eventbus "github.com/Prompiriya084/go-mq/OrderService/Models/Eventbus"
 	"github.com/google/uuid"
 )
 
-type orderServiceImpl struct {
-	repo ports_repositories.OrderRepository
-	bus  eventbus.EventBus[models.Order]
+type orderAPIServiceImpl struct {
+	repo     ports_repositories.OrderRepository
+	eventbus ports_eventbus.EventBusPublisher
 }
 
-func NewOrderService(repo ports_repositories.OrderRepository, bus eventbus.EventBus[models.Order]) OrderService {
-	return &orderServiceImpl{
-		repo: repo,
-		bus:  bus,
+func NewOrderAPIService(repo ports_repositories.OrderRepository, eventbus ports_eventbus.EventBusPublisher) OrderAPIService {
+	return &orderAPIServiceImpl{
+		repo:     repo,
+		eventbus: eventbus,
 	}
 }
-func (s *orderServiceImpl) GetAll(filters *models.Order, preload []string) ([]*models.Order, error) {
+func (s *orderAPIServiceImpl) GetAll(filters *models.Order, preload []string) ([]*models.Order, error) {
 	return s.repo.GetAll(filters, preload)
 }
 
-func (s *orderServiceImpl) Get(filters *models.Order, preload []string) (*models.Order, error) {
+func (s *orderAPIServiceImpl) Get(filters *models.Order, preload []string) (*models.Order, error) {
 	return s.repo.Get(filters, preload)
 }
-func (s *orderServiceImpl) Create(order *models.Order) (string, error) {
+func (s *orderAPIServiceImpl) Create(order *models.Order) (string, error) {
 	errMessage := "Failed to create new order :"
 
 	order.ID = uuid.New()
@@ -40,22 +39,21 @@ func (s *orderServiceImpl) Create(order *models.Order) (string, error) {
 	if err := s.repo.Add(order); err != nil {
 		return "", fmt.Errorf("%s %w", errMessage, err)
 	}
-
-	byteMessage, err := json.Marshal(&models.Order{
-		ID:        order.ID,
+	strOrderID := order.ID.String()
+	sentEvent := &models_eventbus.OrderCreated{
+		ID:        strOrderID,
 		ProductID: order.ProductID,
 		Qty:       order.Qty,
-	})
-	if err != nil {
-		return "", fmt.Errorf("%s %w", errMessage, err)
+		Timestamp: time.Now(),
 	}
-	if err := s.bus.Publish("order.created", byteMessage); err != nil {
+
+	if err := s.eventbus.Publish("order.created", sentEvent); err != nil {
 		return "", fmt.Errorf("%s %w", errMessage, err)
 	}
 
-	return order.ID.String(), nil
+	return strOrderID, nil
 }
-func (s *orderServiceImpl) Update(order *models.Order) error {
+func (s *orderAPIServiceImpl) Update(order *models.Order) error {
 	errMessage := "Failed to update order :"
 	existingOrder, err := s.Get(&models.Order{
 		ID: order.ID,
@@ -74,7 +72,7 @@ func (s *orderServiceImpl) Update(order *models.Order) error {
 	}
 	return nil
 }
-func (s *orderServiceImpl) Delete(orderId string) error {
+func (s *orderAPIServiceImpl) Delete(orderId string) error {
 	errMessage := "Failed to delete order :"
 	uuidOrder, err := uuid.Parse(orderId)
 	if err != nil {
@@ -96,13 +94,13 @@ func (s *orderServiceImpl) Delete(orderId string) error {
 	return nil
 }
 
-// For Message queue
-func (s *orderServiceImpl) InventoryConfirmed(evt *models.Order) error {
-	evt.Status = "SUCCESS"
-	evt.UpdatedAt = time.Now()
-	if err := s.repo.Update(evt); err != nil {
-		return err
-	}
+// // For Message queue
+// func (s *orderServiceImpl) InventoryConfirmed(evt *models.Order) error {
+// 	evt.Status = "SUCCESS"
+// 	evt.UpdatedAt = time.Now()
+// 	if err := s.repo.Update(evt); err != nil {
+// 		return err
+// 	}
 
-	return nil
-}
+// 	return nil
+// }

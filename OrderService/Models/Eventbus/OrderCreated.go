@@ -1,4 +1,4 @@
-package events
+package models_eventbus
 
 import "time"
 

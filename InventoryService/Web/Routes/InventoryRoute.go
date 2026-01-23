@@ -5,7 +5,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func InventorySetupRouter(app *fiber.App, handler *adapters_handlers.InventoryHandler) {
+func InventorySetupRouter(app *fiber.App, handler *adapters_handlers.InventoryAPIHandler) {
 	inventyApp := app.Group("/api/inventory")
 	inventyApp.Post("", handler.Create)
 	inventyApp.Get("", handler.GetAll)

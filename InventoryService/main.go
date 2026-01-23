@@ -1,16 +1,9 @@
 package main
 
 import (
-	adapters_handlers "github.com/Prompiriya084/go-mq/InventoryService/Internal/Adapters/Handlers"
+	bootstrap "github.com/Prompiriya084/go-mq/InventoryService/Internal/Bootstrap"
 	database "github.com/Prompiriya084/go-mq/InventoryService/Internal/Infrastructure/Database"
-	utilities_validator "github.com/Prompiriya084/go-mq/InventoryService/Internal/Utilities/Validator"
-	routes "github.com/Prompiriya084/go-mq/InventoryService/Web/Routes"
-
-	"github.com/gofiber/contrib/swagger"
-	"github.com/gofiber/fiber/v2"
-
-	adapters_repositories "github.com/Prompiriya084/go-mq/InventoryService/Internal/Adapters/Repositories"
-	services "github.com/Prompiriya084/go-mq/InventoryService/Internal/Core/Services"
+	rabbitMQ "github.com/Prompiriya084/go-mq/InventoryService/Internal/Infrastructure/Eventbus"
 )
 
 // @title Inventory Service API
@@ -19,35 +12,23 @@ import (
 // @BasePath /
 // @schemes http
 func main() {
-	app := fiber.New()
+	// app := fiber.New()
 	db := database.InitDb()
 
-	// Serve swagger.json
-	app.Static("/docs", "./docs")
-	// Correct swagger config (must NOT be nil)
-	cfg := swagger.Config{
-		Title: "Order Service API",
-		Path:  "swagger", // UI root
-		// BasePath: "/",       // Mount path
-		FilePath: "./docs/swagger.json",
+	ch, err := rabbitMQ.MQConnectionInit()
+	if err != nil {
+		panic(err.Error())
 	}
 
-	// Generate handler (this is where your panic happened)
-	swaggerHandler := swagger.New(cfg)
-	app.Get("/swagger/*", swaggerHandler)
+	// 👇 topology อยู่ตรงนี้
+	if err := rabbitMQ.DeclareTopology(ch); err != nil {
+		panic(err.Error())
+	}
 
-	repo := adapters_repositories.NewInventoryRepository(db)
-	// mqEventbus := eventbus.NewMQEventbus[models.Order](os.Getenv("RABBITMQ_URL"))
-
-	inventoryAPIService := services.NewInventoryAPIService(repo, mqEventbus)
-
-	validator := utilities_validator.NewValidator()
-	inventoryAPIHandler := adapters_handlers.NewInventoryAPIHandler(inventoryAPIService, validator)
-
-	routes.InventorySetupRouter(app, inventoryAPIHandler)
-
+	bootstrap.StartInventoryAPI(db, ch)
+	bootstrap.StartInventoryConsumer(db, ch)
 	// go inventoryHandler.CheckStock()
 	// go inventoryHandler.ReverseStock()
 
-	app.Listen(":8081")
+	// app.Listen(":8081")
 }

@@ -2,9 +2,6 @@ package adapters_handlers
 
 import (
 	"fmt"
-	"log"
-
-	eventbus "github.com/Prompiriya084/go-mq/EventBus"
 
 	services "github.com/Prompiriya084/go-mq/OrderService/Internal/Core/Services"
 	utilities_validator "github.com/Prompiriya084/go-mq/OrderService/Internal/Core/Utilities/Validator"
@@ -15,18 +12,15 @@ import (
 )
 
 type OrderHandler struct {
-	service   services.OrderService
+	service   services.OrderAPIService
 	validator utilities_validator.Validator
-	bus       eventbus.EventBus[models.Order]
 }
 
-func NewOrderHandler(service services.OrderService,
-	validator utilities_validator.Validator,
-	bus eventbus.EventBus[models.Order]) *OrderHandler {
+func NewOrderHandler(service services.OrderAPIService,
+	validator utilities_validator.Validator) *OrderHandler {
 	return &OrderHandler{
 		service:   service,
 		validator: validator,
-		bus:       bus,
 	}
 }
 
@@ -180,35 +174,35 @@ func (h *OrderHandler) Delete(c *fiber.Ctx) error {
 	})
 }
 
-func (h *OrderHandler) InventoryConfirmed() {
-	err := h.bus.Subscribe("inventory.checked", func(param models.Order) error {
+// func (h *OrderHandler) InventoryConfirmed() {
+// 	err := h.bus.Subscribe("inventory.checked", func(param models.Order) error {
 
-		log.Printf("✅ Processed Order: %v", param)
-		param.Status = "COMPLETED"
-		if err := h.service.Update(&param); err != nil {
-			log.Println(err.Error())
-			return err
-		}
+// 		log.Printf("✅ Processed Order: %v", param)
+// 		param.Status = "COMPLETED"
+// 		if err := h.service.Update(&param); err != nil {
+// 			log.Println(err.Error())
+// 			return err
+// 		}
 
-		return nil //return null when wanting to acknowledge when process complete
-	})
-	if err != nil {
-		panic(err)
-	}
-}
-func (h *OrderHandler) InventoryFailed() {
-	err := h.bus.Subscribe("inventory.failed", func(evt models.Order) error {
+// 		return nil //return null when wanting to acknowledge when process complete
+// 	})
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// }
+// func (h *OrderHandler) InventoryFailed() {
+// 	err := h.bus.Subscribe("inventory.failed", func(evt models.Order) error {
 
-		log.Printf("✅ Processed Order: %v", evt)
-		evt.Status = "FAILED"
-		if err := h.service.Update(&evt); err != nil {
-			log.Println(err.Error())
-			return err
-		}
+// 		log.Printf("✅ Processed Order: %v", evt)
+// 		evt.Status = "FAILED"
+// 		if err := h.service.Update(&evt); err != nil {
+// 			log.Println(err.Error())
+// 			return err
+// 		}
 
-		return nil //return null when wanting to acknowledge when process complete
-	})
-	if err != nil {
-		panic(err)
-	}
-}
+// 		return nil //return null when wanting to acknowledge when process complete
+// 	})
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// }

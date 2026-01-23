@@ -10,13 +10,14 @@ import (
 	"testing"
 	"time"
 
-	eventbus "github.com/Prompiriya084/go-mq/EventBus"
 	adapters_handlers "github.com/Prompiriya084/go-mq/OrderService/Internal/Adapters/Handlers"
+	ports_eventbus "github.com/Prompiriya084/go-mq/OrderService/Internal/Core/Ports/Eventbus"
 	ports_repositories "github.com/Prompiriya084/go-mq/OrderService/Internal/Core/Ports/Repositories"
 	services "github.com/Prompiriya084/go-mq/OrderService/Internal/Core/Services"
 	utilities_validator "github.com/Prompiriya084/go-mq/OrderService/Internal/Core/Utilities/Validator"
 	models "github.com/Prompiriya084/go-mq/OrderService/Models"
-	unittest_eventbus "github.com/Prompiriya084/go-mq/OrderService/UnitTest/MockItem/MQ"
+
+	unittest_eventbus "github.com/Prompiriya084/go-mq/OrderService/UnitTest/MockItem/Eventbus"
 	unittest_repositories "github.com/Prompiriya084/go-mq/OrderService/UnitTest/MockItem/Repositories"
 	routes "github.com/Prompiriya084/go-mq/OrderService/Web/Routes"
 	"github.com/stretchr/testify/assert"
@@ -26,11 +27,11 @@ import (
 )
 
 // This ensures a clean slate and avoids state leakage between tests.
-func createTestApp(mockRepo ports_repositories.OrderRepository, mockEventbus eventbus.EventBus[models.Order]) *fiber.App {
+func createTestApp(mockRepo ports_repositories.OrderRepository, mockEventbus ports_eventbus.EventBusPublisher) *fiber.App {
 	app := fiber.New()
-	service := services.NewOrderService(mockRepo, mockEventbus)
+	service := services.NewOrderAPIService(mockRepo, mockEventbus)
 	validator := utilities_validator.NewValidator()
-	handler := adapters_handlers.NewOrderHandler(service, validator, mockEventbus)
+	handler := adapters_handlers.NewOrderHandler(service, validator)
 	routes.OrderSetupRouter(app, handler) // Set up the routes for testing
 	return app
 }
@@ -41,7 +42,7 @@ func TestCreate(t *testing.T) {
 	mockRepo := &unittest_repositories.MockOrderRepo{
 		MockRepositoryImpl: &unittest_repositories.MockRepositoryImpl[models.Order]{},
 	}
-	mockEventbus := &unittest_eventbus.MockEventbus[models.Order]{}
+	mockEventbus := unittest_eventbus.NewMockRabbitPublisher()
 	app := createTestApp(mockRepo, mockEventbus)
 	// app.Post("/orders",  ) // Replace with your actual handler
 	testcase := []struct {
@@ -124,7 +125,7 @@ func TestGetAll(t *testing.T) {
 					},
 				},
 			}
-			mockEventbus := &unittest_eventbus.MockEventbus[models.Order]{}
+			mockEventbus := unittest_eventbus.NewMockRabbitPublisher()
 			app := createTestApp(mockRepo, mockEventbus)
 
 			req := httptest.NewRequest(http.MethodGet, "/api/orders", nil)
@@ -189,7 +190,7 @@ func TestGet(t *testing.T) {
 					},
 				},
 			}
-			mockEventbus := &unittest_eventbus.MockEventbus[models.Order]{}
+			mockEventbus := unittest_eventbus.NewMockRabbitPublisher()
 			app := createTestApp(mockRepo, mockEventbus)
 			req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/api/orders/%s", tc.queryString), nil)
 			req.Header.Set("Content-type", "application/json")
@@ -306,7 +307,7 @@ func TestUpdate(t *testing.T) {
 					},
 				},
 			}
-			mockEventbus := &unittest_eventbus.MockEventbus[models.Order]{}
+			mockEventbus := unittest_eventbus.NewMockRabbitPublisher()
 			app := createTestApp(mockRepo, mockEventbus)
 
 			req := httptest.NewRequest(http.MethodPut, fmt.Sprintf("/api/orders/%s", tc.queryString), bytes.NewReader(reqbody))
@@ -388,7 +389,7 @@ func TestDelete(t *testing.T) {
 					},
 				},
 			}
-			mockEventbus := &unittest_eventbus.MockEventbus[models.Order]{}
+			mockEventbus := unittest_eventbus.NewMockRabbitPublisher()
 			app := createTestApp(mockRepo, mockEventbus)
 			req := httptest.NewRequest(http.MethodDelete, fmt.Sprintf("/api/orders/%s", tc.queryString), nil)
 			req.Header.Set("Content-type", "application/json")

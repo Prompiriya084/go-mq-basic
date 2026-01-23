@@ -4,9 +4,11 @@ import (
 	"os"
 
 	adapters_eventbus "github.com/Prompiriya084/go-mq/InventoryService/Internal/Adapters/Eventbus"
-	ports_repositories "github.com/Prompiriya084/go-mq/InventoryService/Internal/Core/Ports/Repositories"
+	adapters_handlers "github.com/Prompiriya084/go-mq/InventoryService/Internal/Adapters/Handlers"
+	adapters_repositories "github.com/Prompiriya084/go-mq/InventoryService/Internal/Adapters/Repositories"
 	services "github.com/Prompiriya084/go-mq/InventoryService/Internal/Core/Services"
-	rabbitMQ "github.com/Prompiriya084/go-mq/InventoryService/Internal/Infrastructure/Eventbus"
+	"github.com/rabbitmq/amqp091-go"
+	"gorm.io/gorm"
 )
 
 // type OrderDependencies struct {
@@ -43,21 +45,21 @@ import (
 // 	}, nil
 // }
 
-func StartInventoryConsumer(repo ports_repositories.InventoryRepository) error {
-	ch, err := rabbitMQ.MQConnectionInit(os.Getenv("RABBITMQ_URL"))
-	if err != nil {
-		panic(err.Error())
-	}
+func StartInventoryConsumer(db *gorm.DB, ch *amqp091.Channel) error {
+	// ch, err := rabbitMQ.MQConnectionInit(os.Getenv("RABBITMQ_URL"))
+	// if err != nil {
+	// 	panic(err.Error())
+	// }
 
-	// 👇 topology อยู่ตรงนี้
-	if err := rabbitMQ.DeclareTopology(ch); err != nil {
-		return err
-	}
+	// // 👇 topology อยู่ตรงนี้
+	// if err := rabbitMQ.DeclareTopology(ch); err != nil {
+	// 	return err
+	// }
 
 	eventPublisher := adapters_eventbus.NewRabbitPublisher(ch, os.Getenv("MQ_Inventory_Core_Exchange"))
-
+	repo := adapters_repositories.NewInventoryRepository(db)
 	service := services.NewInventoryEventService(repo, eventPublisher)
-	subscriber := handlers.NewInventorySubscriber(ch, service, 3)
+	subscriber := adapters_handlers.NewInventorySubscriber(ch, service, 3)
 
 	return subscriber.Start()
 }

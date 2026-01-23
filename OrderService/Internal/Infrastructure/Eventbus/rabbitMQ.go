@@ -30,18 +30,18 @@ func MQConnectionInit() (*amqp091.Channel, error) {
 
 func DeclareTopology(ch *amqp091.Channel) error {
 
-	inventory_core_exchange := os.Getenv("MQ_Inventory_Core_Exchange")
-	inventory_core_routing := os.Getenv("MQ_Inventory_Core_Routing")
-	inventory_core_queue := os.Getenv("MQ_Inventory_Core_Queue")
-	inventory_retry_exchange := os.Getenv("MQ_Inventory_Retry_Exchange")
-	inventory_retry_routing := os.Getenv("MQ_Inventory_Retry_Routing")
-	inventory_retry_queue := os.Getenv("MQ_Inventory_Retry_Queue")
-	inventory_dlq_exchange := os.Getenv("MQ_Inventory_DLQ_Exchange")
-	inventory_dlq_routing := os.Getenv("MQ_Inventory_DLQ_Routing")
-	inventory_dlq_queue := os.Getenv("MQ_Inventory_DLQ_Queue")
+	order_core_exchange := os.Getenv("MQ_Inventory_Core_Exchange")
+	order_core_routing := os.Getenv("MQ_Inventory_Core_Routing")
+	order_core_queue := os.Getenv("MQ_Inventory_Core_Queue")
+	order_retry_exchange := os.Getenv("MQ_Inventory_Retry_Exchange")
+	order_retry_routing := os.Getenv("MQ_Inventory_Retry_Routing")
+	order_retry_queue := os.Getenv("MQ_Inventory_Retry_Queue")
+	order_dlq_exchange := os.Getenv("MQ_Inventory_DLQ_Exchange")
+	order_dlq_routing := os.Getenv("MQ_Inventory_DLQ_Routing")
+	order_dlq_queue := os.Getenv("MQ_Inventory_DLQ_Queue")
 
 	if err := ch.ExchangeDeclare(
-		inventory_core_exchange,
+		order_core_exchange,
 		"topic",
 		true,
 		false,
@@ -51,9 +51,10 @@ func DeclareTopology(ch *amqp091.Channel) error {
 	); err != nil {
 		return err
 	}
+
 	// retry + dlq exchange
 	if err := ch.ExchangeDeclare(
-		inventory_retry_exchange,
+		order_retry_exchange,
 		"direct",
 		true,
 		false,
@@ -65,7 +66,7 @@ func DeclareTopology(ch *amqp091.Channel) error {
 	}
 
 	if err := ch.ExchangeDeclare(
-		inventory_dlq_exchange,
+		order_dlq_exchange,
 		"direct",
 		true,
 		false,
@@ -78,14 +79,14 @@ func DeclareTopology(ch *amqp091.Channel) error {
 
 	// Main Queue
 	_, err := ch.QueueDeclare(
-		inventory_core_queue,
+		order_core_queue,
 		true,
 		false,
 		false,
 		false,
 		amqp091.Table{
-			"x-dead-letter-exchange":    inventory_retry_exchange,
-			"x-dead-letter-routing-key": inventory_retry_routing,
+			"x-dead-letter-exchange":    order_retry_exchange,
+			"x-dead-letter-routing-key": order_retry_routing,
 		},
 	)
 	if err != nil {
@@ -94,15 +95,15 @@ func DeclareTopology(ch *amqp091.Channel) error {
 
 	// retry queue
 	_, err = ch.QueueDeclare(
-		inventory_retry_queue,
+		order_retry_queue,
 		true,
 		false,
 		false,
 		false,
 		amqp091.Table{
 			"x-message-ttl":             5000,
-			"x-dead-letter-exchange":    inventory_dlq_exchange,
-			"x-dead-letter-routing-key": inventory_dlq_routing,
+			"x-dead-letter-exchange":    order_dlq_exchange,
+			"x-dead-letter-routing-key": order_dlq_routing,
 		},
 	)
 	if err != nil {
@@ -110,7 +111,7 @@ func DeclareTopology(ch *amqp091.Channel) error {
 	}
 	// dlq
 	_, err = ch.QueueDeclare(
-		inventory_dlq_queue,
+		order_dlq_queue,
 		true,
 		false,
 		false,
@@ -123,9 +124,9 @@ func DeclareTopology(ch *amqp091.Channel) error {
 
 	// bind core process
 	if err := ch.QueueBind(
-		inventory_core_queue,    //queuename
-		inventory_core_routing,  //routing key
-		inventory_core_exchange, //exchange
+		order_core_queue,    //queuename
+		order_core_routing,  //routing key
+		order_core_exchange, //exchange
 		false,
 		nil,
 	); err != nil {
@@ -133,9 +134,9 @@ func DeclareTopology(ch *amqp091.Channel) error {
 	}
 
 	// bind retry process
-	if err := ch.QueueBind(inventory_retry_queue, //queuename
-		inventory_retry_routing,  //routing key
-		inventory_retry_exchange, //exchange
+	if err := ch.QueueBind(order_retry_queue, //queuename
+		order_retry_routing,  //routing key
+		order_retry_exchange, //exchange
 		false,
 		nil,
 	); err != nil {
@@ -144,9 +145,9 @@ func DeclareTopology(ch *amqp091.Channel) error {
 
 	// bind deleted queue process
 	if err := ch.QueueBind(
-		inventory_dlq_queue,    //queuename
-		inventory_dlq_routing,  //routing key
-		inventory_dlq_exchange, //exchange
+		order_dlq_queue,    //queuename
+		order_dlq_routing,  //routing key
+		order_dlq_exchange, //exchange
 		false,
 		nil,
 	); err != nil {
